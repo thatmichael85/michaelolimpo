@@ -3,6 +3,7 @@ import { Heading } from '../../design-system/primitives/Heading';
 
 export interface ProfileHeaderProps {
   bannerSrc?: string;
+  bannerDarkSrc?: string;
   avatarSrc?: string;
   name?: string;
   headline?: string;
@@ -10,6 +11,7 @@ export interface ProfileHeaderProps {
 
 export function ProfileHeader({
   bannerSrc = '/assets/banner.png',
+  bannerDarkSrc = '/assets/banner-dark.png',
   avatarSrc = '/assets/avatar.png',
   name = 'Michael Angelo S Olimpo',
   headline = 'AI Guide human',
@@ -19,8 +21,13 @@ export function ProfileHeader({
       <div className="banner-container">
         <img
           src={bannerSrc}
-          alt="Doodle Unicorn & Dinosaur Background Banner"
-          className="banner-img"
+          alt="Light Doodle Unicorn & Dinosaur Background Banner"
+          className="banner-img banner-img-light"
+        />
+        <img
+          src={bannerDarkSrc}
+          alt="Midnight Doodle Unicorn & Dinosaur Background Banner"
+          className="banner-img banner-img-dark"
         />
       </div>
 
