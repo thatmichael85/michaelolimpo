@@ -20,6 +20,8 @@ export function Text({ variant = 'primary', children, className = '', style, ...
       style={{
         color,
         lineHeight: 1.6,
+        overflowWrap: 'break-word',
+        wordWrap: 'break-word',
         ...style,
       }}
       {...props}

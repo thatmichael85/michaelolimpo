@@ -4,7 +4,13 @@ import { LandingPage } from "./LandingPage";
 
 describe("LandingPage", () => {
   it("renders all key landing page sections", () => {
-    render(<LandingPage />);
+    const { container } = render(<LandingPage />);
+    expect(container.querySelector(".landing-wrapper")).toBeInTheDocument();
+    expect(container.querySelector(".cartoon-card")).toBeInTheDocument();
+    expect(container.querySelector(".identity-info")).toBeInTheDocument();
+    expect(container.querySelector(".bio-block")).toBeInTheDocument();
+    expect(container.querySelector(".linkedin-cta-wrap")).toBeInTheDocument();
+
     expect(screen.getByRole("heading", { level: 1, name: "Michael Angelo S Olimpo" })).toBeInTheDocument();
     expect(screen.getByText("AI Guide & Systems Builder")).toBeInTheDocument();
     expect(
