@@ -1,20 +1,34 @@
-export interface AvatarProps {
+import type { HTMLAttributes } from 'react';
+import { Badge } from './Badge';
+
+export interface AvatarProps extends HTMLAttributes<HTMLDivElement> {
   src: string;
   alt: string;
   badgeText?: string;
   size?: number;
+  className?: string;
 }
 
-export function Avatar({ src, alt, badgeText = '👋 Hi!', size = 88 }: AvatarProps) {
+export function Avatar({
+  src,
+  alt,
+  badgeText = '👋 Hi!',
+  size = 88,
+  className = '',
+  style,
+  ...props
+}: AvatarProps) {
   return (
     <div
-      className="avatar-wrapper"
+      className={`avatar-wrapper ${className}`.trim()}
       style={{
         position: 'relative',
         flexShrink: 0,
         width: size,
         height: size,
+        ...style,
       }}
+      {...props}
     >
       <img
         src={src}
@@ -33,28 +47,19 @@ export function Avatar({ src, alt, badgeText = '👋 Hi!', size = 88 }: AvatarPr
         }}
       />
       {badgeText && (
-        <span
+        <Badge
+          variant="handwritten"
+          size="sm"
           className="avatar-doodle-badge"
           style={{
             position: 'absolute',
             top: '-4px',
             right: '-4px',
-            backgroundColor: 'var(--badge-bg)',
-            color: 'var(--badge-text)',
-            border: '1.5px solid var(--badge-border)',
-            borderRadius: 'var(--radius-full)',
-            padding: '2px 7px',
-            fontSize: '11px',
-            fontWeight: 800,
-            boxShadow: '1px 1px 0px rgba(0,0,0,0.2)',
-            display: 'inline-flex',
-            alignItems: 'center',
-            gap: '4px',
-            userSelect: 'none',
+            zIndex: 1,
           }}
         >
           {badgeText}
-        </span>
+        </Badge>
       )}
     </div>
   );
