@@ -7,6 +7,7 @@ import { LandingPage } from './pages/LandingPage';
 import {
   getStoredThemePreference,
   resolveTheme,
+  getNextThemePreference,
   type ThemePreference,
   type ThemeMode,
 } from './utils/theme';
@@ -16,7 +17,10 @@ export function App() {
   const [resolvedTheme, setResolvedTheme] = useState<ThemeMode>(() => resolveTheme(preference));
 
   useEffect(() => {
-    const mediaQuery = typeof window !== 'undefined' && window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
+    const mediaQuery =
+      typeof window !== 'undefined' && window.matchMedia
+        ? window.matchMedia('(prefers-color-scheme: dark)')
+        : null;
 
     const updateResolved = () => {
       const current = resolveTheme(preference);
@@ -35,14 +39,22 @@ export function App() {
   }, [preference]);
 
   const toggleTheme = () => {
-    const next: ThemeMode = resolvedTheme === 'light' ? 'dark' : 'light';
-    setPreference(next);
-    localStorage.setItem('theme', next);
+    const nextPref = getNextThemePreference(preference);
+    setPreference(nextPref);
+    if (nextPref === 'system') {
+      localStorage.removeItem('theme');
+    } else {
+      localStorage.setItem('theme', nextPref);
+    }
   };
 
   return (
     <Theme theme={neutralTheme}>
-      <ThemeToggle currentTheme={resolvedTheme} onToggleTheme={toggleTheme} />
+      <ThemeToggle
+        preference={preference}
+        resolvedTheme={resolvedTheme}
+        onToggleTheme={toggleTheme}
+      />
       <LandingPage />
       <Footer />
     </Theme>

@@ -1,5 +1,10 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { getSystemTheme, getStoredThemePreference, resolveTheme } from './theme';
+import {
+  getSystemTheme,
+  getStoredThemePreference,
+  resolveTheme,
+  getNextThemePreference,
+} from './theme';
 
 describe('theme utils', () => {
   let mockStore: Record<string, string> = {};
@@ -42,6 +47,11 @@ describe('theme utils', () => {
       expect(getStoredThemePreference()).toBe('system');
     });
 
+    it('returns "system" when explicitly stored in localStorage', () => {
+      window.localStorage.setItem('theme', 'system');
+      expect(getStoredThemePreference()).toBe('system');
+    });
+
     it('returns "light" when stored in localStorage', () => {
       window.localStorage.setItem('theme', 'light');
       expect(getStoredThemePreference()).toBe('light');
@@ -50,6 +60,14 @@ describe('theme utils', () => {
     it('returns "dark" when stored in localStorage', () => {
       window.localStorage.setItem('theme', 'dark');
       expect(getStoredThemePreference()).toBe('dark');
+    });
+  });
+
+  describe('getNextThemePreference', () => {
+    it('cycles from system -> light -> dark -> system', () => {
+      expect(getNextThemePreference('system')).toBe('light');
+      expect(getNextThemePreference('light')).toBe('dark');
+      expect(getNextThemePreference('dark')).toBe('system');
     });
   });
 
