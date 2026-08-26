@@ -4,29 +4,45 @@ import { neutralTheme } from './design-system/theme';
 import { ThemeToggle } from './components/layout/ThemeToggle';
 import { Footer } from './components/layout/Footer';
 import { LandingPage } from './pages/LandingPage';
+import {
+  getStoredThemePreference,
+  resolveTheme,
+  type ThemePreference,
+  type ThemeMode,
+} from './utils/theme';
 
 export function App() {
-  const [theme, setTheme] = useState<'light' | 'dark'>(() => {
-    if (typeof window !== 'undefined') {
-      const saved = localStorage.getItem('theme');
-      if (saved === 'dark' || saved === 'light') return saved;
-      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-    }
-    return 'light';
-  });
+  const [preference, setPreference] = useState<ThemePreference>(() => getStoredThemePreference());
+  const [resolvedTheme, setResolvedTheme] = useState<ThemeMode>(() => resolveTheme(preference));
 
   useEffect(() => {
-    document.documentElement.setAttribute('data-theme', theme);
-    localStorage.setItem('theme', theme);
-  }, [theme]);
+    const mediaQuery = typeof window !== 'undefined' && window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
+
+    const updateResolved = () => {
+      const current = resolveTheme(preference);
+      setResolvedTheme(current);
+      document.documentElement.setAttribute('data-theme', current);
+    };
+
+    updateResolved();
+
+    if (preference === 'system' && mediaQuery) {
+      mediaQuery.addEventListener('change', updateResolved);
+      return () => {
+        mediaQuery.removeEventListener('change', updateResolved);
+      };
+    }
+  }, [preference]);
 
   const toggleTheme = () => {
-    setTheme((prev) => (prev === 'light' ? 'dark' : 'light'));
+    const next: ThemeMode = resolvedTheme === 'light' ? 'dark' : 'light';
+    setPreference(next);
+    localStorage.setItem('theme', next);
   };
 
   return (
     <Theme theme={neutralTheme}>
-      <ThemeToggle currentTheme={theme} onToggleTheme={toggleTheme} />
+      <ThemeToggle currentTheme={resolvedTheme} onToggleTheme={toggleTheme} />
       <LandingPage />
       <Footer />
     </Theme>
