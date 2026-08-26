@@ -20,8 +20,8 @@ export function getStoredThemePreference(): ThemePreference {
     return 'system';
   }
   const saved = localStorage.getItem('theme');
-  if (saved === 'light' || saved === 'dark') {
-    return saved;
+  if (saved === 'light' || saved === 'dark' || saved === 'system') {
+    return saved as ThemePreference;
   }
   return 'system';
 }
@@ -34,4 +34,13 @@ export function resolveTheme(pref: ThemePreference): ThemeMode {
     return getSystemTheme();
   }
   return pref;
+}
+
+/**
+ * Cycles through the 3 theme states: system -> light -> dark -> system.
+ */
+export function getNextThemePreference(current: ThemePreference): ThemePreference {
+  if (current === 'system') return 'light';
+  if (current === 'light') return 'dark';
+  return 'system';
 }

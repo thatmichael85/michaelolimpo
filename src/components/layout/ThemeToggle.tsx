@@ -1,10 +1,26 @@
+import type { ThemePreference, ThemeMode } from '../../utils/theme';
+
 export interface ThemeToggleProps {
-  currentTheme: 'light' | 'dark';
+  preference: ThemePreference;
+  resolvedTheme: ThemeMode;
   onToggleTheme: () => void;
 }
 
-export function ThemeToggle({ currentTheme, onToggleTheme }: ThemeToggleProps) {
-  const nextThemeLabel = currentTheme === 'light' ? 'Switch to Dark Mode' : 'Switch to Light Mode';
+export function ThemeToggle({
+  preference,
+  resolvedTheme,
+  onToggleTheme,
+}: ThemeToggleProps) {
+  let icon = '🖥️';
+  let label = `Theme: System (${resolvedTheme}) · Click for Light Mode`;
+
+  if (preference === 'light') {
+    icon = '☀️';
+    label = 'Theme: Light · Click for Dark Mode';
+  } else if (preference === 'dark') {
+    icon = '🌙';
+    label = 'Theme: Dark · Click for System Mode';
+  }
 
   return (
     <div className="theme-toggle-fixed-wrap">
@@ -12,10 +28,10 @@ export function ThemeToggle({ currentTheme, onToggleTheme }: ThemeToggleProps) {
         type="button"
         className="theme-toggle-btn"
         onClick={onToggleTheme}
-        aria-label={nextThemeLabel}
-        title={nextThemeLabel}
+        aria-label={label}
+        title={label}
       >
-        <span aria-hidden="true">{currentTheme === 'light' ? '☀️' : '🌙'}</span>
+        <span aria-hidden="true">{icon}</span>
       </button>
     </div>
   );
