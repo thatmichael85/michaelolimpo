@@ -1,11 +1,11 @@
-import { Button } from '../../design-system/primitives/Button';
+import { Button } from "../../design-system/primitives/Button";
 
 export interface ConnectCTAProps {
   linkedInUrl?: string;
 }
 
 export function ConnectCTA({
-  linkedInUrl = 'https://www.linkedin.com/in/michael-angelo-s-olimpo/',
+  linkedInUrl = "https://www.linkedin.com/in/michael-angelo-s-olimpo/",
 }: ConnectCTAProps) {
   return (
     <div className="linkedin-cta-wrap">
@@ -13,7 +13,7 @@ export function ConnectCTA({
         href={linkedInUrl}
         target="_blank"
         rel="noopener noreferrer"
-        aria-label="Connect on LinkedIn"
+        aria-label="Connect on LinkedIn (opens in a new tab)"
       >
         <svg
           className="linkedin-icon"

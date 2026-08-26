@@ -1,4 +1,4 @@
-import type { ThemePreference, ThemeMode } from '../../utils/theme';
+import type { ThemePreference, ThemeMode } from "../../utils/theme";
 
 export interface ThemeToggleProps {
   preference: ThemePreference;
@@ -11,15 +11,15 @@ export function ThemeToggle({
   resolvedTheme,
   onToggleTheme,
 }: ThemeToggleProps) {
-  let icon = '🖥️';
-  let label = `Theme: System (${resolvedTheme}) · Click for Light Mode`;
+  let icon = "🖥️";
+  let label = `Current theme: System (${resolvedTheme}). Switch to light mode.`;
 
-  if (preference === 'light') {
-    icon = '☀️';
-    label = 'Theme: Light · Click for Dark Mode';
-  } else if (preference === 'dark') {
-    icon = '🌙';
-    label = 'Theme: Dark · Click for System Mode';
+  if (preference === "light") {
+    icon = "☀️";
+    label = "Current theme: Light. Switch to dark mode.";
+  } else if (preference === "dark") {
+    icon = "🌙";
+    label = "Current theme: Dark. Switch to system mode.";
   }
 
   return (

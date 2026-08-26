@@ -1,10 +1,10 @@
-import type { HTMLAttributes } from 'react';
+import type { HTMLAttributes, ReactNode } from 'react';
 import { Badge } from './Badge';
 
 export interface AvatarProps extends HTMLAttributes<HTMLDivElement> {
   src: string;
   alt: string;
-  badgeText?: string;
+  badgeText?: ReactNode;
   size?: number;
   className?: string;
 }
@@ -12,7 +12,11 @@ export interface AvatarProps extends HTMLAttributes<HTMLDivElement> {
 export function Avatar({
   src,
   alt,
-  badgeText = '👋 Hi!',
+  badgeText = (
+    <>
+      <span aria-hidden="true">👋</span> Hi!
+    </>
+  ),
   size = 88,
   className = '',
   style,

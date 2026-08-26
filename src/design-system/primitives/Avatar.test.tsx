@@ -9,7 +9,7 @@ describe("Avatar primitive", () => {
     expect(img).toBeInTheDocument();
     expect(img).toHaveAttribute("src", "/assets/avatar.png");
 
-    const badge = screen.getByText("👋 Hi!");
+    const badge = screen.getByText(/Hi!/i).closest('.pop-badge');
     expect(badge).toBeInTheDocument();
     expect(badge).toHaveClass("pop-badge", "badge--handwritten");
   });
