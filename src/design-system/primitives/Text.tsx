@@ -1,24 +1,30 @@
-import { Text as AstryxText } from '@astryxdesign/core/Text';
-import type { TextColor } from '@astryxdesign/core/theme';
-import type { ReactNode, CSSProperties } from 'react';
+import type { HTMLAttributes, ReactNode } from 'react';
 
-export interface TextProps {
+export interface TextProps extends HTMLAttributes<HTMLParagraphElement> {
   children: ReactNode;
-  variant?: 'primary' | 'secondary' | 'disabled' | 'accent' | 'inherit';
+  variant?: 'primary' | 'secondary' | 'muted';
   className?: string;
-  style?: CSSProperties;
 }
 
 export function Text({ variant = 'primary', children, className = '', style, ...props }: TextProps) {
+  const color =
+    variant === 'primary'
+      ? 'var(--text-primary)'
+      : variant === 'secondary'
+      ? 'var(--text-secondary)'
+      : 'var(--text-muted)';
+
   return (
-    <AstryxText
-      display="block"
-      color={variant as TextColor}
+    <p
       className={className}
-      style={style}
+      style={{
+        color,
+        lineHeight: 1.6,
+        ...style,
+      }}
       {...props}
     >
       {children}
-    </AstryxText>
+    </p>
   );
 }
