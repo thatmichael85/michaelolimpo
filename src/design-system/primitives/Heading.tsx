@@ -65,6 +65,8 @@ export function Heading({
   };
 
   const baseStyle: CSSProperties = {
+    overflowWrap: 'break-word',
+    wordWrap: 'break-word',
     ...getLevelStyle(level),
     ...style,
   };
