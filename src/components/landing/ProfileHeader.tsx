@@ -1,5 +1,5 @@
-import { Avatar } from '../../design-system/primitives/Avatar';
-import { Heading } from '../../design-system/primitives/Heading';
+import { Avatar } from "../../design-system/primitives/Avatar";
+import { Heading } from "../../design-system/primitives/Heading";
 
 export interface ProfileHeaderProps {
   bannerSrc?: string;
@@ -10,29 +10,29 @@ export interface ProfileHeaderProps {
 }
 
 export function ProfileHeader({
-  bannerSrc = '/assets/banner.png',
-  bannerDarkSrc = '/assets/banner-dark.png',
-  avatarSrc = '/assets/avatar.png',
-  name = 'Michael Angelo S Olimpo',
-  headline = 'AI Guide human',
+  bannerSrc = "/assets/banner.png",
+  bannerDarkSrc = "/assets/banner-dark.png",
+  avatarSrc = "/assets/avatar.png",
+  name = "Michael Angelo S Olimpo",
+  headline = "AI Guide & Systems Builder",
 }: ProfileHeaderProps) {
   return (
     <>
-      <div className="banner-container">
+      <div className="banner-container" aria-hidden="true">
         <img
           src={bannerSrc}
-          alt="Light Doodle Unicorn & Dinosaur Background Banner"
+          alt=""
           className="banner-img banner-img-light"
         />
         <img
           src={bannerDarkSrc}
-          alt="Midnight Doodle Unicorn & Dinosaur Background Banner"
+          alt=""
           className="banner-img banner-img-dark"
         />
       </div>
 
       <header className="profile-header">
-        <Avatar src={avatarSrc} alt={name} badgeText="👋 Hi!" />
+        <Avatar src={avatarSrc} alt={name} />
 
         <div className="identity-info">
           <Heading level={1}>{name}</Heading>
