@@ -7,7 +7,7 @@ describe('ProfileHeader', () => {
     render(<ProfileHeader />);
     expect(screen.getByRole('heading', { level: 1, name: 'Michael Angelo S Olimpo' })).toBeInTheDocument();
     expect(screen.getByText('AI Guide human')).toBeInTheDocument();
-    expect(screen.getByAltText('Michael Angelo S Olimpo')).toBeInTheDocument();
+    expect(screen.getByRole('img', { name: 'Michael Angelo S Olimpo' })).toBeInTheDocument();
     expect(screen.queryByAltText(/Background Banner/i)).not.toBeInTheDocument();
   });
 });

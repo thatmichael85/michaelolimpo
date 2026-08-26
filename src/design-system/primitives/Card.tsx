@@ -1,28 +1,20 @@
-import type { HTMLAttributes, ReactNode } from 'react';
+import { Card as AstryxCard } from '@astryxdesign/core/Card';
+import type { ReactNode, CSSProperties } from 'react';
 
-export interface CardProps extends HTMLAttributes<HTMLDivElement> {
+export interface CardProps {
   children: ReactNode;
   className?: string;
+  style?: CSSProperties;
 }
 
-export function Card({ children, className = '', ...props }: CardProps) {
+export function Card({ children, className = '', style, ...props }: CardProps) {
   return (
-    <div
+    <AstryxCard
       className={`cartoon-card ${className}`}
-      style={{
-        backgroundColor: 'var(--bg-card)',
-        border: '2px solid var(--border-color)',
-        borderRadius: 'var(--radius-lg)',
-        boxShadow: 'var(--shadow-pop)',
-        overflow: 'hidden',
-        display: 'flex',
-        flexDirection: 'column',
-        transition:
-          'background-color var(--duration-normal) var(--ease-standard), border-color var(--duration-normal) var(--ease-standard), box-shadow var(--duration-normal) var(--ease-standard)',
-      }}
+      style={style}
       {...props}
     >
       {children}
-    </div>
+    </AstryxCard>
   );
 }
