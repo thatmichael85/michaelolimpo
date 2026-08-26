@@ -7,8 +7,8 @@ export function LandingPage() {
   return (
     <main className="landing-wrapper">
       <Card>
+        <ProfileHeader />
         <div className="card-body">
-          <ProfileHeader />
           <BioBlock />
           <ConnectCTA />
         </div>

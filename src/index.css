@@ -73,28 +73,53 @@ body {
   outline-offset: 2px;
 }
 
-.card-body {
-  padding: 32px 36px 36px 36px;
+.banner-container {
+  width: 100%;
+  height: 150px;
+  background: var(--bg-banner);
+  border-bottom: 2px solid var(--border-color);
+  position: relative;
+  overflow: hidden;
   display: flex;
-  flex-direction: column;
-  gap: 24px;
+  align-items: center;
+  justify-content: center;
 }
 
-@media (max-width: 600px) {
-  .card-body { padding: 24px 20px 28px 20px; gap: 20px; }
+.banner-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+  display: block;
 }
 
 .profile-header {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 20px;
   position: relative;
+  margin-top: -56px;
+  padding: 0 36px;
 }
 
 .identity-info {
   display: flex;
   flex-direction: column;
   gap: 4px;
+  padding-top: 56px;
+}
+
+.card-body {
+  padding: 24px 36px 36px 36px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+@media (max-width: 600px) {
+  .banner-container { height: 120px; }
+  .profile-header { padding: 0 20px; }
+  .card-body { padding: 20px 20px 28px 20px; gap: 20px; }
 }
 
 .person-headline {
