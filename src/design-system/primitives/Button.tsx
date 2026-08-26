@@ -1,38 +1,36 @@
-import { Button as AstryxButton } from '@astryxdesign/core/Button';
-import type { ReactNode } from 'react';
+import type { AnchorHTMLAttributes, ButtonHTMLAttributes, ReactNode } from 'react';
 
-export interface ButtonProps {
-  children?: ReactNode;
-  label?: string;
-  href?: string;
-  target?: string;
-  rel?: string;
+type BaseButtonProps = {
+  children: ReactNode;
   className?: string;
-  onClick?: () => void;
-  'aria-label'?: string;
-}
+};
 
-export function Button({
-  children,
-  label = 'Connect on LinkedIn',
-  href,
-  target,
-  rel,
-  className = '',
-  onClick,
-  'aria-label': ariaLabel,
-}: ButtonProps) {
+export type AnchorButtonProps = BaseButtonProps &
+  AnchorHTMLAttributes<HTMLAnchorElement> & {
+    href: string;
+  };
+
+export type NativeButtonProps = BaseButtonProps &
+  ButtonHTMLAttributes<HTMLButtonElement> & {
+    href?: never;
+  };
+
+export type ButtonProps = AnchorButtonProps | NativeButtonProps;
+
+export function Button({ children, className = '', ...props }: ButtonProps) {
+  if ('href' in props && props.href !== undefined) {
+    return (
+      <a className={`linkedin-btn ${className}`} {...(props as AnchorHTMLAttributes<HTMLAnchorElement>)}>
+        {children}
+      </a>
+    );
+  }
+
+  const { type = 'button', ...buttonProps } = props as ButtonHTMLAttributes<HTMLButtonElement>;
+
   return (
-    <AstryxButton
-      label={label}
-      href={href}
-      target={target}
-      rel={rel}
-      className={`linkedin-btn ${className}`}
-      onClick={onClick}
-      aria-label={ariaLabel || label}
-    >
+    <button type={type} className={`linkedin-btn ${className}`} {...buttonProps}>
       {children}
-    </AstryxButton>
+    </button>
   );
 }
