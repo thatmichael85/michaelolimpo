@@ -1,10 +1,12 @@
-import type { ReactNode } from "react";
+import type { HTMLAttributes, ReactNode } from 'react';
+import { Badge } from './Badge';
 
-export interface AvatarProps {
+export interface AvatarProps extends HTMLAttributes<HTMLDivElement> {
   src: string;
   alt: string;
   badgeText?: ReactNode;
   size?: number;
+  className?: string;
 }
 
 export function Avatar({
@@ -16,56 +18,52 @@ export function Avatar({
     </>
   ),
   size = 88,
+  className = '',
+  style,
+  ...props
 }: AvatarProps) {
   return (
     <div
-      className="avatar-wrapper"
+      className={`avatar-wrapper ${className}`.trim()}
       style={{
-        position: "relative",
+        position: 'relative',
         flexShrink: 0,
         width: size,
         height: size,
+        ...style,
       }}
+      {...props}
     >
       <img
         src={src}
         alt={alt}
         className="avatar-img"
         style={{
-          width: "100%",
-          height: "100%",
-          borderRadius: "var(--radius-full)",
-          objectFit: "cover",
-          border: "3px solid var(--border-color)",
-          boxShadow: "var(--shadow-pop-sm)",
-          backgroundColor: "var(--bg-card)",
-          display: "block",
-          transition: "transform var(--duration-fast) var(--ease-emphasized)",
+          width: '100%',
+          height: '100%',
+          borderRadius: 'var(--radius-full)',
+          objectFit: 'cover',
+          border: '3px solid var(--border-color)',
+          boxShadow: 'var(--shadow-pop-sm)',
+          backgroundColor: 'var(--bg-card)',
+          display: 'block',
+          transition: 'transform var(--duration-fast) var(--ease-emphasized)',
         }}
       />
       {badgeText && (
-        <span
+        <Badge
+          variant="handwritten"
+          size="sm"
           className="avatar-doodle-badge"
           style={{
-            position: "absolute",
-            top: "-4px",
-            right: "-4px",
-            backgroundColor: "var(--badge-bg)",
-            color: "var(--badge-text)",
-            border: "1.5px solid var(--badge-border)",
-            borderRadius: "var(--radius-full)",
-            padding: "2px 7px",
-            fontSize: "11px",
-            fontWeight: 800,
-            boxShadow: "1px 1px 0px rgba(0,0,0,0.2)",
-            display: "inline-flex",
-            alignItems: "center",
-            gap: "4px",
-            userSelect: "none",
+            position: 'absolute',
+            top: '-4px',
+            right: '-4px',
+            zIndex: 1,
           }}
         >
           {badgeText}
-        </span>
+        </Badge>
       )}
     </div>
   );
