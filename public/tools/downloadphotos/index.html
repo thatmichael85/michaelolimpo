@@ -78,6 +78,10 @@
             font-size:12.5px; color:var(--muted); background:var(--card); border:1px solid var(--line);
             border-radius:10px; padding:8px 12px; margin-bottom:18px; text-align:center; }
   .notice span::before { content:"✓ "; color:var(--ok); }
+  /* "why this exists" + legal lines: full-width paragraphs inside the notice */
+  .notice p { flex:1 1 100%; margin:0; }
+  .notice .why { color:var(--fg); }
+  .notice .fine { font-size:11.5px; }
   /* photo modal */
   .modal { position:fixed; inset:0; z-index:50; background:rgba(0,0,0,.82);
            display:flex; flex-direction:column; padding:14px; gap:12px; }
@@ -120,10 +124,20 @@
 
   <!-- privacy notice -->
   <div class="notice" role="note">
+    <p class="why"><b>Why this exists:</b> I'm a parent who just wanted my kid's photos. The ChildFirst app has no way to
+      download them in bulk, and ain't nobody got time to tap every photo one by one to save it to their phone.
+      So I built this for myself and shared it in case it helps other parents.</p>
+    <span>No analytics, cookies or tracking</span>
     <span><a href="https://github.com/thatmichael85/michaelolimpo/tree/main/public/tools/downloadphotos" target="_blank" rel="noopener">Open source</a></span>
     <span>Runs entirely in your browser, talking directly to ChildFirst</span>
     <span>Nothing saved — no server; logins and photos never touch mikeosoft.ai</span>
     <span>You only see your own child's photos (scoped to your login)</span>
+    <p class="fine">Personal, non-commercial project — not affiliated with or endorsed by ChildFirst or Taidii; their names
+      belong to their owners. Provided as-is, with no warranty; use at your own risk. Only sign in with your own account,
+      and you're responsible for following ChildFirst's terms. Photos may show other children — please keep them private
+      and don't post them publicly. If you represent ChildFirst/Taidii and have concerns,
+      <a href="https://github.com/thatmichael85/michaelolimpo/issues" target="_blank" rel="noopener">open an issue</a>
+      and I'll respond promptly, including taking this down.</p>
   </div>
 
   <!-- LOGIN -->
