@@ -86,6 +86,12 @@
   /* stage fills the space; the img shrinks to the photo so the area around it is backdrop (click = close) */
   .modal-stage { flex:1; min-height:0; display:flex; align-items:center; justify-content:center; }
   .modal-stage img { max-width:100%; max-height:100%; width:auto; height:auto; border-radius:8px; }
+  /* zoom: the stage owns all gestures while open (pinch/pan), the img is moved with a CSS transform */
+  .modal-stage { touch-action:none; overflow:hidden; }
+  .modal-stage img { cursor:zoom-in; user-select:none; -webkit-user-select:none; transform-origin:center; }
+  .modal-stage.zoomed img { cursor:grab; }
+  .modal-stage.panning img { cursor:grabbing; }
+  .modal-bar .zoom { color:#fff; border-color:rgba(255,255,255,.4); min-width:40px; padding-left:10px; padding-right:10px; }
   /* phones (~360-430px): 16px gutters, 44px touch targets, 16px inputs (no iOS zoom), 3-up grid */
   @media (max-width: 600px) {
     .wrap { padding:16px 16px 48px; }
@@ -178,10 +184,13 @@
     <div class="modal-bar">
       <span class="pill" id="modalDate"></span>
       <span style="flex:1"></span>
+      <button class="ghost zoom" id="zoomOut" title="Zoom out" aria-label="Zoom out">−</button>
+      <button class="ghost zoom" id="zoomIn" title="Zoom in" aria-label="Zoom in">+</button>
+      <button class="ghost zoom" id="zoomFit" title="Fit to screen">Fit</button>
       <button id="modalDl">Download this photo</button>
       <button class="ghost" id="modalClose" style="color:#fff; border-color:rgba(255,255,255,.4)">Close ✕</button>
     </div>
-    <div class="modal-stage"><img id="modalImg" alt=""></div>
+    <div class="modal-stage" id="modalStage"><img id="modalImg" alt="" draggable="false"></div>
   </div>
 
   <footer>
@@ -477,11 +486,104 @@ function openModal(item) {
   $("modalDate").textContent = item.date || "";
   $("modalDl").textContent = "Download this photo"; $("modalDl").disabled = false;
   $("modal").hidden = false; document.body.style.overflow = "hidden";
+  resetZoom();
 }
 function closeModal() {
   $("modal").hidden = true; $("modalImg").removeAttribute("src");
+  resetZoom();
   document.body.style.overflow = ""; modalItem = null;
 }
+
+// ---- modal zoom: wheel/pinch zoom toward the pointer, click/double-tap toggles, drag pans ----
+// The img stays flex-centred in the stage; we only apply translate(tx,ty) scale(z) around its centre.
+const ZMIN = 1, ZMAX = 6, ZTAP = 2.5;
+let zoom = 1, tx = 0, ty = 0;
+const ptrs = new Map();               // active pointers on the stage: id -> {x, y}
+let gesture = null;                   // {moved, x, y, dist} for the current drag/pinch
+let suppressClick = false, lastTap = null, lastPtrType = "mouse";
+function applyZoom(animate) {
+  const img = $("modalImg"), stage = $("modalStage");
+  // clamp pan: a zoomed img may not leave a gap on a side where it's bigger than the stage
+  const mx = Math.max(0, (img.offsetWidth * zoom - stage.clientWidth) / 2);
+  const my = Math.max(0, (img.offsetHeight * zoom - stage.clientHeight) / 2);
+  tx = Math.min(mx, Math.max(-mx, tx)); ty = Math.min(my, Math.max(-my, ty));
+  img.style.transition = animate ? "transform .15s ease" : "none";
+  img.style.transform = zoom === 1 ? "" : `translate(${tx}px, ${ty}px) scale(${zoom})`;
+  stage.classList.toggle("zoomed", zoom > 1);
+}
+// zoom to z keeping screen point (px, py) fixed; defaults to the stage centre
+function zoomAt(z, px, py, animate) {
+  const r = $("modalStage").getBoundingClientRect();
+  const cx = r.left + r.width / 2, cy = r.top + r.height / 2;
+  if (px == null) { px = cx; py = cy; }
+  z = Math.min(ZMAX, Math.max(ZMIN, z));
+  const k = z / zoom;
+  tx = px - cx - (px - cx - tx) * k; ty = py - cy - (py - cy - ty) * k;
+  zoom = z; if (zoom === 1) tx = ty = 0;
+  applyZoom(animate);
+}
+function resetZoom() { zoom = 1; tx = ty = 0; ptrs.clear(); gesture = null; applyZoom(false); }
+function toggleZoom(px, py) { zoom > 1 ? zoomAt(1, 0, 0, true) : zoomAt(ZTAP, px, py, true); }
+function pinchInfo() {
+  const [a, b] = [...ptrs.values()];
+  return { x: (a.x + b.x) / 2, y: (a.y + b.y) / 2, dist: Math.hypot(a.x - b.x, a.y - b.y) || 1 };
+}
+const stage = $("modalStage");
+stage.addEventListener("wheel", e => {
+  e.preventDefault();                 // ctrl+wheel = trackpad pinch; plain wheel zooms too
+  const dy = e.deltaY * (e.deltaMode === 1 ? 16 : 1);
+  zoomAt(zoom * Math.exp(-dy * (e.ctrlKey ? 0.01 : 0.002)), e.clientX, e.clientY);
+}, { passive: false });
+stage.addEventListener("pointerdown", e => {
+  lastPtrType = e.pointerType; suppressClick = false;
+  if (e.button !== 0) return;
+  ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
+  if (ptrs.size === 2) gesture = { moved: true, ...pinchInfo() };
+  else if (ptrs.size === 1) gesture = { moved: false, x: e.clientX, y: e.clientY, sx: e.clientX, sy: e.clientY };
+  // capture only once there's something to drag, so plain clicks keep their real target
+  if (zoom > 1 || ptrs.size === 2) stage.setPointerCapture(e.pointerId);
+});
+// move/up are watched on window so a drag that ends outside the stage is still seen as a drag
+window.addEventListener("pointermove", e => {
+  const p = ptrs.get(e.pointerId); if (!p || !gesture) return;
+  p.x = e.clientX; p.y = e.clientY;
+  if (ptrs.size === 2) {
+    const g = pinchInfo();
+    tx += g.x - gesture.x; ty += g.y - gesture.y;
+    zoomAt(zoom * g.dist / gesture.dist, g.x, g.y);
+    Object.assign(gesture, g);
+  } else if (ptrs.size === 1) {
+    if (!gesture.moved && Math.hypot(e.clientX - gesture.sx, e.clientY - gesture.sy) > 5) {
+      gesture.moved = true; stage.setPointerCapture(e.pointerId);
+    }
+    if (gesture.moved && zoom > 1) {
+      tx += e.clientX - gesture.x; ty += e.clientY - gesture.y; applyZoom(false);
+      stage.classList.add("panning");
+    }
+    gesture.x = e.clientX; gesture.y = e.clientY;
+  }
+});
+function endPointer(e) {
+  if (!ptrs.delete(e.pointerId) || !gesture) return;
+  const g = gesture;
+  if (g.moved) suppressClick = true;  // a drag/pinch must never count as a click (e.g. close on backdrop)
+  if (ptrs.size === 1) {              // pinch -> one finger left: continue as a pan from here
+    const [q] = ptrs.values(); gesture = { moved: true, x: q.x, y: q.y }; return;
+  }
+  gesture = null; stage.classList.remove("panning");
+  // touch double-tap toggles zoom (mouse uses a single click, handled in the click listener)
+  if (e.type === "pointerup" && e.pointerType !== "mouse" && !g.moved) {
+    const now = Date.now();
+    if (lastTap && now - lastTap.t < 300 && Math.hypot(e.clientX - lastTap.x, e.clientY - lastTap.y) < 30) {
+      toggleZoom(e.clientX, e.clientY); lastTap = null; suppressClick = true;
+    } else lastTap = { t: now, x: e.clientX, y: e.clientY };
+  }
+}
+window.addEventListener("pointerup", endPointer);
+window.addEventListener("pointercancel", endPointer);
+$("modalImg").addEventListener("dragstart", e => e.preventDefault());
+window.addEventListener("resize", () => { if (!$("modal").hidden) applyZoom(false); });
+
 async function downloadOne() {
   if (!modalItem) return;
   const btn = $("modalDl"); btn.disabled = true; btn.textContent = "Downloading…";
@@ -640,8 +742,19 @@ $("more").onclick = loadPreviews;
 $("jump").onchange = e => { const k = e.target.value; e.target.value = ""; if (k) jumpTo(k); };
 $("modalClose").onclick = closeModal;
 $("modalDl").onclick = downloadOne;
-// dismiss when clicking anywhere that isn't the photo itself or a button
-$("modal").onclick = e => { if (e.target.tagName !== "IMG" && e.target.tagName !== "BUTTON") closeModal(); };
+$("zoomIn").onclick = () => zoomAt(zoom * 1.5, null, null, true);
+$("zoomOut").onclick = () => zoomAt(zoom / 1.5, null, null, true);
+$("zoomFit").onclick = () => zoomAt(1, null, null, true);
+// click on the photo toggles zoom; anywhere else that isn't a button dismisses
+// (when zoomed, a backdrop click just returns to fit instead of closing)
+$("modal").onclick = e => {
+  if (suppressClick) { suppressClick = false; return; }
+  if (e.target.tagName === "BUTTON") return;
+  const touch = lastPtrType !== "mouse";
+  if (e.target.tagName === "IMG" && zoom === 1) { if (!touch) zoomAt(ZTAP, e.clientX, e.clientY, true); }
+  else if (zoom > 1) { if (!touch) zoomAt(1, 0, 0, true); }
+  else closeModal();
+};
 document.addEventListener("keydown", e => { if (e.key === "Escape" && !$("modal").hidden) closeModal(); });
 // infinite scroll: load more when the sentinel nears the viewport
 if ("IntersectionObserver" in window) {
