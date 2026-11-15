@@ -41,6 +41,17 @@
   button:disabled { opacity:.5; cursor:default; }
   #login { max-width:380px; margin:8vh auto 0; }
   #login button { width:100%; margin-top:22px; }
+  /* show/hide password: eye button sits inside the right edge of the field */
+  .pw { position:relative; }
+  .pw input { padding-right:48px; }
+  #login .pw-toggle { position:absolute; top:0; right:0; bottom:0; width:44px; margin:0; padding:0;
+                      display:flex; align-items:center; justify-content:center;
+                      background:transparent; color:var(--muted); border-radius:0 9px 9px 0; }
+  #login .pw-toggle:hover { color:var(--fg); }
+  #login .pw-toggle:focus-visible { outline:2px solid var(--accent); outline-offset:-2px; }
+  .pw-toggle svg { width:20px; height:20px; }
+  .pw-toggle .eye-off, .pw-toggle[aria-pressed="true"] .eye { display:none; }
+  .pw-toggle[aria-pressed="true"] .eye-off { display:block; }
   .err { color:var(--err); font-size:14px; min-height:20px; margin-top:12px; }
   .note { font-size:12.5px; color:var(--muted); margin-top:18px; line-height:1.5; }
   header { display:flex; flex-wrap:wrap; gap:12px; align-items:center;
@@ -147,7 +158,16 @@
     <label for="u">Username or email</label>
     <input id="u" name="username" autocomplete="username" required>
     <label for="p">Password</label>
-    <input id="p" name="password" type="password" autocomplete="current-password" required>
+    <div class="pw">
+      <input id="p" name="password" type="password" autocomplete="current-password" required>
+      <button type="button" class="pw-toggle" id="pwToggle" aria-label="Show password" aria-pressed="false" title="Show password">
+        <svg class="eye" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>
+        <svg class="eye-off" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M9.9 4.2A10.6 10.6 0 0 1 12 4c6.5 0 10 8 10 8a17.6 17.6 0 0 1-3.2 4.2M6.6 6.6A17.4 17.4 0 0 0 2 12s3.5 8 10 8a9.7 9.7 0 0 0 5.4-1.6"/>
+          <path d="M9.9 9.9a3 3 0 0 0 4.2 4.2"/><path d="M2 2l20 20"/></svg>
+      </button>
+    </div>
     <button type="submit" id="loginBtn">Sign in</button>
     <div class="err" id="loginErr"></div>
     <p class="note">
@@ -744,12 +764,18 @@ $("login").onsubmit = async e => {
   try {
     const data = await login($("u").value, $("p").value);
     token = data.token; children = (data.user && data.user.children) || [];
-    $("p").value = "";
+    $("p").value = ""; setPwVisible(false);
     if (!children.length) { $("loginErr").textContent = "No children found on this account."; }
     else { saveSession(); showApp(); renderChildren(); pick(children[0].id); }
   } catch (err) { $("loginErr").textContent = err.message; }
   $("loginBtn").disabled = false; $("loginBtn").textContent = "Sign in";
 };
+function setPwVisible(on) {
+  $("p").type = on ? "text" : "password";
+  const t = $("pwToggle"), label = on ? "Hide password" : "Show password";
+  t.setAttribute("aria-pressed", on); t.setAttribute("aria-label", label); t.title = label;
+}
+$("pwToggle").onclick = () => { setPwVisible($("p").type === "password"); $("p").focus(); };
 function doLogout() { token = null; children = []; current = null; clearSession(); $("u").value = ""; showLogin(); }
 $("logout").onclick = doLogout;
 $("more").onclick = loadPreviews;
