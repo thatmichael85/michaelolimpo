@@ -369,3 +369,23 @@
   gap: 8px;
   padding-top: 10px;
 }
+
+/* Date rail and floating return-to-top control stay outside the photo grid. */
+.cf-date-timeline {
+  position: fixed; right: 14px; top: 23vh; height: min(50vh, 460px); width: 44px;
+  z-index: 8; touch-action: none; cursor: ns-resize; user-select: none;
+}
+.cf-date-timeline::before { content: ''; position: absolute; right: 6px; top: 0; bottom: 0; width: 2px; background: var(--border-subtle); }
+.cf-date-tick { position: absolute; right: 4px; width: 6px; height: 4px; border-radius: 4px; background: var(--border-color); transform: translateY(-50%); }
+.cf-date-year { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); color: var(--text-secondary); font-size: 11px; background: var(--bg-canvas); padding: 2px; }
+.cf-date-handle { position: absolute; right: 1px; width: 12px; height: 8px; background: var(--action-bg); border-radius: 6px; transform: translateY(-50%); }
+.cf-date-tooltip { position: absolute; right: 52px; transform: translateY(-50%); white-space: nowrap; padding: 5px 9px; border-radius: 6px; background: var(--bg-card); color: var(--text-primary); border: 1px solid var(--border-color); font-size: 12px; pointer-events: none; }
+.cf-scroll-top { position: fixed; right: 18px; bottom: max(22px, env(safe-area-inset-bottom)); z-index: 9; width: 46px; height: 46px; display: flex; align-items: center; justify-content: center; border: 1px solid var(--border-color); border-radius: 50%; color: var(--action-text); background: var(--action-bg); box-shadow: 0 2px 8px var(--border-subtle); cursor: pointer; }
+.cf-scroll-top:hover { background: var(--action-hover); }
+.cf-date-timeline:focus-visible, .cf-scroll-top:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 4px; }
+.cf-month { scroll-margin-top: 12px; }
+@media (max-width: 1150px) {
+  .cf-gallery { padding-right: 42px; }
+  .cf-date-timeline { right: 2px; width: 36px; }
+  .cf-scroll-top { right: 12px; }
+}

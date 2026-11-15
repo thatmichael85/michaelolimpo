@@ -3,7 +3,8 @@ import { encCreds } from './crypto';
 import { checkResponse, HttpError, makePacer, withRetry } from './pacer';
 
 export const API = 'https://v2.taidii.com';
-export const PAGE_SIZE = 30;
+export const PAGE_SIZE = 30; // Bulk-download listing default
+export const GALLERY_PAGE_SIZE = 50;
 export const API_GAP = 900; // ms between listing/API calls (gentle on their app server)
 
 export interface Child {
@@ -76,8 +77,9 @@ export async function taggedPage(
   token: string,
   cid: number,
   p: number,
+  pageSize = PAGE_SIZE,
 ): Promise<PhotoPage> {
-  const params: Record<string, string | number> = { kind: 1, page: p, page_size: PAGE_SIZE, student_id: cid };
+  const params: Record<string, string | number> = { kind: 1, page: p, page_size: pageSize, student_id: cid };
   const resp = await apiGET<{ data?: { results?: RawPhoto[]; next?: unknown; count?: number } }>(
     token,
     '/api/portfoliov3/student_photos/by_month/',
@@ -92,7 +94,7 @@ export async function taggedPage(
       thumb: (x.thumb_url || x.thumb || x.full_url || x.photo_url || x.url) as string,
       date: (x.upload_time || x.upload_date || '').slice(0, 10),
     }));
-  return { results, next: d.next != null ? !!d.next : results.length >= PAGE_SIZE, count: d.count };
+  return { results, next: d.next != null ? !!d.next : results.length >= pageSize, count: d.count };
 }
 
 export function childName(c: Child): string {

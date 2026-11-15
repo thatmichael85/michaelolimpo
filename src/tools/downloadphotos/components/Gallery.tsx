@@ -55,7 +55,7 @@ export function Gallery({ g, onOpen }: { g: GalleryData; onOpen: (p: Photo) => v
     <>
       <div className="cf-gallery">
         {g.keys.map((key) => (
-          <section key={key} className="cf-month" aria-label={monthLabel(key)}>
+          <section key={key} data-month-key={key} className="cf-month" aria-label={monthLabel(key)}>
             <h3 className="cf-month-h">{monthLabel(key)}</h3>
             <div className="cf-grid" onMouseOver={onGridHover}>
               {g.photos[key].map((p, i) => (
