@@ -55,7 +55,14 @@
   .grid img { width:100%; aspect-ratio:1; object-fit:cover; border-radius:8px;
               background:var(--line); display:block; cursor:pointer;
               transition:transform .12s ease, box-shadow .12s ease; }
-  .grid img:hover { transform:translateY(-2px); box-shadow:0 4px 14px rgba(0,0,0,.18); }
+  /* hover zoom (2x) only on real pointer devices; the .15s delay is hover intent, so sweeping
+     the mouse across the grid doesn't flicker. transform-origin is set per thumb in JS (fitZoom)
+     so edge thumbs grow inward and stay inside the viewport. */
+  @media (hover:hover) and (pointer:fine) {
+    .grid img { transition:transform .18s ease, box-shadow .18s ease; }
+    .grid img:hover { position:relative; z-index:5; transform:scale(2);
+                      box-shadow:0 10px 30px rgba(0,0,0,.35); transition-delay:.15s; }
+  }
   .month-h { font-size:14px; font-weight:600; color:var(--muted); margin:22px 0 8px;
              position:sticky; top:0; background:var(--bg); padding:6px 0; z-index:1; }
   .pill { display:inline-block; font-size:12px; padding:2px 9px; border-radius:20px;
@@ -274,6 +281,20 @@ function addPhoto(item) {
   img.onclick = () => openModal(item);
   sec._grid.append(img);
 }
+
+// pick a transform-origin so the 2x hover zoom stays inside the viewport (edge columns grow inward).
+// With origin offset o along an axis, the scaled box spans [p - o(Z-1), p + Z*size - o(Z-1)].
+const ZOOM = 2, ZOOM_PAD = 8;
+function fitZoom(img) {
+  const r = img.getBoundingClientRect(), k = ZOOM - 1;
+  const axis = (p, size, max) => {
+    const lo = (p + ZOOM * size - (max - ZOOM_PAD)) / k, hi = (p - ZOOM_PAD) / k;
+    return Math.min(Math.max(Math.min(Math.max(size / 2, lo), hi), 0), size);
+  };
+  img.style.transformOrigin = axis(r.left, r.width, document.documentElement.clientWidth) + "px " +
+                              axis(r.top, r.height, window.innerHeight) + "px";
+}
+$("gallery").addEventListener("mouseover", e => { if (e.target.matches(".grid img")) fitZoom(e.target); });
 
 function pick(id) {
   current = id; page = 1; lastNext = false;
