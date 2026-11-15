@@ -18,8 +18,8 @@ it('keeps all photos under StrictMode and requests consecutive pages without mon
   await waitFor(() => expect(result.current.allDone).toBe(true));
   expect(result.current.flat.map(p => p.id)).toEqual([1, 2]);
   expect(result.current.keys).toEqual(['2026-11', '2026-10']);
-  expect(taggedPage).toHaveBeenNthCalledWith(1, 'mock', 123, 1);
-  expect(taggedPage).toHaveBeenNthCalledWith(2, 'mock', 123, 2);
+  expect(taggedPage).toHaveBeenNthCalledWith(1, 'mock', 123, 1, 50);
+  expect(taggedPage).toHaveBeenNthCalledWith(2, 'mock', 123, 2, 50);
 });
 it('retries a failed page without skipping it', async () => {
   vi.mocked(taggedPage).mockRejectedValueOnce(new Error('offline'))

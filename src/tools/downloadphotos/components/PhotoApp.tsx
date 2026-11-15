@@ -7,6 +7,7 @@ import { useGallery } from '../useGallery';
 import { DownloadPanel } from './DownloadPanel';
 import { Gallery } from './Gallery';
 import { PhotoViewer } from './PhotoViewer';
+import { GalleryNavigation } from './GalleryNavigation';
 
 /** Gallery + download for one child. Mounted with key={child.id}, so switching child starts fresh. */
 function ChildPhotos({ token, child, onUnauthorized }: { token: string; child: Child; onUnauthorized: () => void }) {
@@ -18,9 +19,9 @@ function ChildPhotos({ token, child, onUnauthorized }: { token: string; child: C
         token={token}
         child={child}
         count={g.count}
-
       />
       <Gallery g={g} onOpen={setOpen} />
+      <GalleryNavigation months={g.keys.filter(key => key !== 'undated')} />
       <PhotoViewer photos={g.flat} open={open} onChange={setOpen} />
     </>
   );

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { isUnauthorized, taggedPage, type Photo } from './api';
+import { GALLERY_PAGE_SIZE, isUnauthorized, taggedPage, type Photo } from './api';
 import { addPhotos, flattenPhotos, sectionKeys, type PhotosByMonth } from './gallery';
 
 /** Consecutive newest-first pages; a child switch mounts a fresh gallery. */
@@ -20,7 +20,7 @@ export function useGallery(token: string, childId: number, onUnauthorized: () =>
     busy.current = true;
     setList(l => ({ ...l, loading: true, error: '' }));
     try {
-      const d = await taggedPage(token, childId, page.current);
+      const d = await taggedPage(token, childId, page.current, GALLERY_PAGE_SIZE);
       if (!alive.current) return;
       // Compute outside the React updater: deduplication mutates the seen set.
       const fresh = addPhotos({}, d.results, seen.current);
