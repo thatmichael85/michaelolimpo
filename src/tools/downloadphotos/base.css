@@ -1,0 +1,44 @@
+@import '@astryxdesign/core/reset.css';
+@import '@astryxdesign/core/astryx.css';
+@import '@astryxdesign/theme-neutral/theme.css';
+
+/* Independent tool palette; the landing page keeps its own theme. */
+:root {
+  color-scheme: light;
+  --bg-canvas: #f7f8fa; --bg-card: #fff;
+  --text-primary: #171a1f; --text-secondary: #505963; --text-muted: #626b75;
+  --border-color: #dce1e6; --border-subtle: #e8ecf0;
+  --link-color: #225e53; --check-color: #225e53; --focus-ring: #237667;
+  --action-bg: #225e53; --action-text: #fff; --action-hover: #194c43;
+  --radius-sm: 6px; --radius-md: 10px; --radius-lg: 12px;
+  --shadow-pop: none; --shadow-pop-sm: none;
+  --font-mono: ui-monospace, monospace;
+  --text-xs: 12px; --text-sm: 14px; --text-base: 16px; --text-lg: 18px; --text-xl: 22px; --text-2xl: 26px;
+  --duration-normal: 150ms; --ease-standard: ease;
+}
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --bg-canvas: #121619; --bg-card: #1b2025;
+  --text-primary: #f2f4f6; --text-secondary: #b8c1ca; --text-muted: #a4aeb8;
+  --border-color: #3a424b; --border-subtle: #2d353e;
+  --link-color: #92dac6; --check-color: #92dac6; --focus-ring: #92dac6;
+  --action-bg: #92dac6; --action-text: #122a23; --action-hover: #a5e9d7;
+}
+*, *::before, *::after { box-sizing: border-box; }
+body { margin: 0; background: var(--bg-canvas); color: var(--text-primary); font: 15px/1.5 system-ui, sans-serif; }
+p, h1, h2, h3, ul { margin: 0; }
+button, input { font: inherit; }
+button { touch-action: manipulation; }
+.heading { font-weight: 650 !important; }
+.cartoon-card { border-width: 1px !important; }
+.pop-btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 44px; padding: 9px 15px; border: 1px solid transparent; border-radius: 7px; background: var(--action-bg); color: var(--action-text); font-size: 14px; font-weight: 600; cursor: pointer; text-decoration: none; }
+.pop-btn:hover { background: var(--action-hover); }
+.pop-btn:disabled { opacity: .6; cursor: default; }
+.pop-btn--outline, .pop-btn--secondary, .pop-btn--ghost { background: var(--bg-card); color: var(--text-primary); border-color: var(--border-color); }
+.pop-btn--outline:hover, .pop-btn--secondary:hover, .pop-btn--ghost:hover { background: var(--border-subtle); }
+.pop-btn--sm { padding: 6px 12px; }
+.pop-btn:focus-visible, .theme-toggle-btn:focus-visible { outline: 2px solid var(--focus-ring); outline-offset: 3px; }
+.pop-badge { display: inline-flex; align-items: center; padding: 2px 8px; border-radius: 5px; background: var(--border-subtle); color: var(--text-secondary); font-size: 12px; white-space: nowrap; }
+.theme-toggle-fixed-wrap { position: fixed; top: 12px; right: 16px; z-index: 10; }
+.theme-toggle-btn { width: 40px; height: 40px; background: var(--bg-card); border: 1px solid var(--border-color); border-radius: 8px; cursor: pointer; }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; scroll-behavior: auto !important; } }
