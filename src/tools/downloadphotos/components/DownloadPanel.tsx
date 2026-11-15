@@ -65,6 +65,7 @@ export function DownloadPanel({ token, child, count }: Props) {
           {status}
         </Text>
         <Text variant="secondary" className="cf-note">
+          <strong>For the best experience, use a desktop computer.</strong>{' '}
           {folder
             ? 'Photos save into a folder you choose. If a download stops or fails, just click again and pick the same folder — it skips what you already have and resumes.'
             : "Your browser can't save to a folder directly, so photos download as one ZIP per month. (Use Chrome or Edge to save to a folder and resume if interrupted.)"}
