@@ -1,0 +1,21 @@
+import { expect, it, vi } from 'vitest';
+import { attachViewerZoom } from './zoom';
+it('closes on whitespace around the photo, while a zoomed backdrop returns to fit', () => {
+  const dialog = document.createElement('dialog');
+  dialog.innerHTML = '<div><div><img alt="Test" /></div><button>Control</button></div>';
+  document.body.append(dialog);
+  const close = vi.fn();
+  const controller = attachViewerZoom(dialog, undefined, close);
+  const image = dialog.querySelector('img')!;
+  image.parentElement!.click();
+  expect(close).toHaveBeenCalledTimes(1);
+  image.click();
+  expect(dialog.dataset.zoomed).toBe('true');
+  dialog.firstElementChild!.dispatchEvent(new MouseEvent('click', { bubbles: true }));
+  expect(dialog.dataset.zoomed).toBe('false');
+  expect(close).toHaveBeenCalledTimes(1);
+  dialog.querySelector('button')!.click();
+  expect(close).toHaveBeenCalledTimes(1);
+  controller.destroy();
+  dialog.remove();
+});
