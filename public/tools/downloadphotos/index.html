@@ -51,13 +51,23 @@
   .row { display:flex; flex-wrap:wrap; gap:12px; align-items:center; }
   progress { width:100%; height:12px; margin:14px 0 6px; }
   .status { font-size:14px; color:var(--muted); min-height:20px; }
-  .grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(120px,1fr)); gap:7px; margin-top:18px; }
+  .grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(120px,1fr)); gap:7px; }
   .grid img { width:100%; aspect-ratio:1; object-fit:cover; border-radius:8px;
-              background:var(--line); display:block; }
+              background:var(--line); display:block; cursor:pointer;
+              transition:transform .12s ease, box-shadow .12s ease; }
+  .grid img:hover { transform:translateY(-2px); box-shadow:0 4px 14px rgba(0,0,0,.18); }
+  .month-h { font-size:14px; font-weight:600; color:var(--muted); margin:22px 0 8px;
+             position:sticky; top:0; background:var(--bg); padding:6px 0; z-index:1; }
   .pill { display:inline-block; font-size:12px; padding:2px 9px; border-radius:20px;
           background:var(--line); color:var(--muted); }
   [hidden] { display:none !important; }
   footer { text-align:center; color:var(--muted); font-size:12px; margin-top:28px; }
+  /* photo modal */
+  .modal { position:fixed; inset:0; z-index:50; background:rgba(0,0,0,.82);
+           display:flex; flex-direction:column; padding:14px; gap:12px; }
+  .modal-bar { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+  .modal-bar .pill { background:rgba(255,255,255,.15); color:#fff; }
+  .modal img { flex:1; min-height:0; width:100%; object-fit:contain; border-radius:8px; }
 </style>
 </head>
 <body>
@@ -103,10 +113,23 @@
       <p class="note" id="saveNote"></p>
     </div>
 
-    <div class="grid" id="grid"></div>
-    <div class="row" style="justify-content:center; margin-top:18px">
-      <button class="ghost" id="more" hidden>Load more previews</button>
+    <div id="gallery"></div>
+    <div id="sentinel" style="height:1px"></div>
+    <div class="row" style="justify-content:center; margin:16px 0">
+      <span class="status" id="moreStatus"></span>
+      <button class="ghost" id="more" hidden>Load more</button>
     </div>
+  </div>
+
+  <!-- single-photo modal -->
+  <div id="modal" class="modal" hidden>
+    <div class="modal-bar">
+      <span class="pill" id="modalDate"></span>
+      <span style="flex:1"></span>
+      <button id="modalDl">Download this photo</button>
+      <button class="ghost" id="modalClose" style="color:#fff; border-color:rgba(255,255,255,.4)">Close ✕</button>
+    </div>
+    <img id="modalImg" alt="">
   </div>
 
   <footer>
@@ -224,29 +247,92 @@ function renderChildren() {
     $("tabs").append(b);
   });
 }
+let loading = false, monthSections = {};
+
+function monthLabel(date) {
+  if (!date) return "Undated";
+  const [y, m] = date.split("-");
+  return new Date(+y, +m - 1, 1).toLocaleString(undefined, { month: "long", year: "numeric" });
+}
+
+// add one photo to its year-month section (sections appear in the order photos arrive,
+// which is newest-first, so the gallery stays chronological)
+function addPhoto(item) {
+  const key = (item.date || "").slice(0, 7) || "undated";
+  let sec = monthSections[key];
+  if (!sec) {
+    sec = document.createElement("section");
+    const h = document.createElement("h3"); h.className = "month-h"; h.textContent = monthLabel(item.date);
+    const g = document.createElement("div"); g.className = "grid";
+    sec.append(h, g); sec._grid = g;
+    monthSections[key] = sec; $("gallery").append(sec);
+  }
+  const img = document.createElement("img");
+  img.loading = "lazy"; img.src = item.thumb; img.alt = item.date || ""; img.title = item.date || "";
+  img.onclick = () => openModal(item);
+  sec._grid.append(img);
+}
+
 function pick(id) {
-  current = id; page = 1;
+  current = id; page = 1; lastNext = false;
   [...$("tabs").children].forEach(b => b.classList.toggle("on", +b.dataset.id === id));
-  $("grid").innerHTML = ""; $("status").textContent = ""; $("prog").hidden = true;
+  $("gallery").innerHTML = ""; monthSections = {};
+  $("status").textContent = ""; $("prog").hidden = true; $("moreStatus").textContent = "";
   $("range").hidden = true; $("count").textContent = "…";
   loadPreviews();
 }
+
 async function loadPreviews() {
-  $("more").disabled = true;
+  if (loading || current == null) return;
+  loading = true; $("more").hidden = true; $("moreStatus").textContent = "Loading…";
   try {
     const d = await taggedPage(current, page);
-    d.results.forEach(p => {
-      const img = document.createElement("img");
-      img.loading = "lazy"; img.src = p.thumb; img.alt = p.date; img.title = p.date;
-      $("grid").append(img);
-    });
+    d.results.forEach(addPhoto);
     if (page === 1) $("count").textContent = (d.count != null ? d.count + " photos" : d.results.length + "+ photos");
-    lastNext = d.next; $("more").hidden = !d.next; page++;
+    lastNext = d.next; page++;
+    $("moreStatus").textContent = lastNext ? "" : "— end of photos —";
+    $("more").hidden = !lastNext;
   } catch (e) {
-    if (e.status === 401) return doLogout();
-    $("status").textContent = "Couldn't load photos: " + e.message;
+    if (e.status === 401) { loading = false; return doLogout(); }
+    $("moreStatus").textContent = "Couldn't load photos: " + e.message;
+    $("more").hidden = false;   // allow manual retry
   }
-  $("more").disabled = false;
+  loading = false;
+  maybeLoadMore();              // keep filling until the screen is full or photos run out
+}
+
+// auto-load the next page as the sentinel nears the viewport (infinite scroll)
+function maybeLoadMore() {
+  if (!lastNext || loading || current == null) return;
+  const r = $("sentinel").getBoundingClientRect();
+  if (r.top < window.innerHeight + 600) loadPreviews();
+}
+
+// ---- single-photo modal ----------------------------------------------------
+let modalItem = null;
+function openModal(item) {
+  modalItem = item;
+  $("modalImg").src = item.url;              // full-resolution image
+  $("modalDate").textContent = item.date || "";
+  $("modalDl").textContent = "Download this photo"; $("modalDl").disabled = false;
+  $("modal").hidden = false; document.body.style.overflow = "hidden";
+}
+function closeModal() {
+  $("modal").hidden = true; $("modalImg").removeAttribute("src");
+  document.body.style.overflow = ""; modalItem = null;
+}
+async function downloadOne() {
+  if (!modalItem) return;
+  const btn = $("modalDl"); btn.disabled = true; btn.textContent = "Downloading…";
+  try {
+    const r = await fetch(modalItem.url); if (!r.ok) throw new Error("http " + r.status);
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(await r.blob()); a.download = fileName(modalItem, 0);
+    a.click(); URL.revokeObjectURL(a.href);
+    btn.textContent = "Saved ✓"; setTimeout(() => { btn.textContent = "Download this photo"; btn.disabled = false; }, 1200);
+  } catch (e) {
+    btn.textContent = "Failed — retry"; btn.disabled = false;
+  }
 }
 
 // ---- download (File System Access API, with ZIP-by-month fallback) ---------
@@ -390,6 +476,18 @@ $("login").onsubmit = async e => {
 function doLogout() { token = null; children = []; current = null; clearSession(); $("u").value = ""; showLogin(); }
 $("logout").onclick = doLogout;
 $("more").onclick = loadPreviews;
+$("modalClose").onclick = closeModal;
+$("modalDl").onclick = downloadOne;
+// dismiss when clicking anywhere that isn't the photo itself or a button
+$("modal").onclick = e => { if (e.target.tagName !== "IMG" && e.target.tagName !== "BUTTON") closeModal(); };
+document.addEventListener("keydown", e => { if (e.key === "Escape" && !$("modal").hidden) closeModal(); });
+// infinite scroll: load more when the sentinel nears the viewport
+if ("IntersectionObserver" in window) {
+  new IntersectionObserver(es => { if (es[0].isIntersecting) maybeLoadMore(); },
+    { rootMargin: "600px" }).observe($("sentinel"));
+} else {
+  window.addEventListener("scroll", () => maybeLoadMore(), { passive: true });
+}
 $("dl").onclick = () => downloadAll().catch(e => { $("status").textContent = "Error: " + e.message; $("dl").disabled = false; $("prog").hidden = true; });
 
 // Restore a prior session (survives refresh, not tab close). An expired token
