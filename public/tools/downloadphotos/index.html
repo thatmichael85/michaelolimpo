@@ -55,13 +55,29 @@
   .grid img { width:100%; aspect-ratio:1; object-fit:cover; border-radius:8px;
               background:var(--line); display:block; cursor:pointer;
               transition:transform .12s ease, box-shadow .12s ease; }
-  .grid img:hover { transform:translateY(-2px); box-shadow:0 4px 14px rgba(0,0,0,.18); }
+  /* hover zoom (2x) only on real pointer devices; the .15s delay is hover intent, so sweeping
+     the mouse across the grid doesn't flicker. transform-origin is set per thumb in JS (fitZoom)
+     so edge thumbs grow inward and stay inside the viewport. */
+  @media (hover:hover) and (pointer:fine) {
+    .grid img { transition:transform .18s ease, box-shadow .18s ease; }
+    .grid img:hover { position:relative; z-index:5; transform:scale(2);
+                      box-shadow:0 10px 30px rgba(0,0,0,.35); transition-delay:.15s; }
+  }
   .month-h { font-size:14px; font-weight:600; color:var(--muted); margin:22px 0 8px;
              position:sticky; top:0; background:var(--bg); padding:6px 0; z-index:1; }
+  .jump { margin-top:12px; }
+  .jump label { margin:0; }
+  .jump select { flex:1 1 180px; min-width:0; max-width:320px; padding:9px 10px; border:1px solid var(--line);
+                 border-radius:9px; background:var(--bg); color:var(--fg); font:inherit; }
   .pill { display:inline-block; font-size:12px; padding:2px 9px; border-radius:20px;
           background:var(--line); color:var(--muted); }
   [hidden] { display:none !important; }
   footer { text-align:center; color:var(--muted); font-size:12px; margin-top:28px; }
+  /* top privacy notice (shown on every screen) */
+  .notice { display:flex; flex-wrap:wrap; justify-content:center; gap:4px 16px;
+            font-size:12.5px; color:var(--muted); background:var(--card); border:1px solid var(--line);
+            border-radius:10px; padding:8px 12px; margin-bottom:18px; text-align:center; }
+  .notice span::before { content:"✓ "; color:var(--ok); }
   /* photo modal */
   .modal { position:fixed; inset:0; z-index:50; background:rgba(0,0,0,.82);
            display:flex; flex-direction:column; padding:14px; gap:12px; }
@@ -76,10 +92,39 @@
   .modal-stage.zoomed img { cursor:grab; }
   .modal-stage.panning img { cursor:grabbing; }
   .modal-bar .zoom { color:#fff; border-color:rgba(255,255,255,.4); min-width:40px; padding-left:10px; padding-right:10px; }
+  /* phones (~360-430px): 16px gutters, 44px touch targets, 16px inputs (no iOS zoom), 3-up grid */
+  @media (max-width: 600px) {
+    .wrap { padding:16px 16px 48px; }
+    .card { padding:18px 16px; }
+    #login { margin-top:4vh; }
+    input { font-size:16px; min-height:44px; }
+    button { min-height:44px; }
+    /* title + child tabs share the first row with Sign out (top-right) instead of pushing it below */
+    header { flex-wrap:nowrap; align-items:flex-start; }
+    header > div { flex:1 1 0; min-width:0; }
+    header > button { flex:none; }
+    header h1 { font-size:20px; overflow-wrap:anywhere; }
+    #dl { flex:1 1 100%; }
+    .status, .note { overflow-wrap:anywhere; }
+    .grid { grid-template-columns:repeat(3, minmax(0,1fr)); gap:4px; }
+    .grid img { border-radius:6px; }
+    .modal { padding:10px; gap:8px; }
+    .modal-bar { gap:8px; }
+    /* row 1: date + Close (top-right, easy to reach); row 2: full-width download */
+    #modalDl { order:1; flex:1 1 100%; }
+  }
 </style>
 </head>
 <body>
 <div class="wrap">
+
+  <!-- privacy notice -->
+  <div class="notice" role="note">
+    <span><a href="https://github.com/thatmichael85/michaelolimpo/tree/main/public/tools/downloadphotos" target="_blank" rel="noopener">Open source</a></span>
+    <span>Runs entirely in your browser, talking directly to ChildFirst</span>
+    <span>Nothing saved — no server; logins and photos never touch mikeosoft.ai</span>
+    <span>You only see your own child's photos (scoped to your login)</span>
+  </div>
 
   <!-- LOGIN -->
   <form id="login" class="card" hidden autocomplete="on">
@@ -115,6 +160,11 @@
         <button id="dl">Download all photos…</button>
         <span class="pill" id="count">—</span>
         <span class="pill" id="range" hidden></span>
+      </div>
+      <div class="row jump" id="jumpRow" hidden>
+        <label for="jump">Jump to</label>
+        <select id="jump"></select>
+        <span class="status" id="jumpStatus"></span>
       </div>
       <progress id="prog" hidden></progress>
       <div class="status" id="status"></div>
@@ -227,9 +277,10 @@ async function login(user, pw) {
 }
 
 // ---- photo listing (tagged moments, kind=1) --------------------------------
-async function taggedPage(cid, p) {
-  const resp = await apiGET("/api/portfoliov3/student_photos/by_month/",
-    { kind: 1, page: p, page_size: PAGE_SIZE, student_id: cid });
+async function taggedPage(cid, p, monthDay) {   // monthDay "YYYY-MM-01" limits to that month
+  const params = { kind: 1, page: p, page_size: PAGE_SIZE, student_id: cid };
+  if (monthDay) params.month_day = monthDay;
+  const resp = await apiGET("/api/portfoliov3/student_photos/by_month/", params);
   const d = resp.data || {};
   const results = (d.results || []).filter(x => x.full_url || x.photo_url || x.url).map(x => ({
     id: x.id,
@@ -258,7 +309,10 @@ function renderChildren() {
     $("tabs").append(b);
   });
 }
-let loading = false, monthSections = {};
+let loading = false, monthSections = {}, seen = new Set();
+// jump-to-month state: months from date_range (newest first), months fully loaded via by_month,
+// how far the plain newest-first listing got, and whether we've switched to month-by-month loading
+let months = [], doneMonths = new Set(), listOldest = null, listDone = false, jumped = false, navGen = 0;
 
 function monthLabel(date) {
   if (!date) return "Undated";
@@ -266,17 +320,21 @@ function monthLabel(date) {
   return new Date(+y, +m - 1, 1).toLocaleString(undefined, { month: "long", year: "numeric" });
 }
 
-// add one photo to its year-month section (sections appear in the order photos arrive,
-// which is newest-first, so the gallery stays chronological)
+// add one photo to its year-month section. Months can arrive out of order (jump-to-month),
+// so each new section is inserted at its place to keep the gallery newest-first.
 function addPhoto(item) {
+  if (item.id != null) { if (seen.has(item.id)) return; seen.add(item.id); }   // listing + month loads overlap
   const key = (item.date || "").slice(0, 7) || "undated";
   let sec = monthSections[key];
   if (!sec) {
     sec = document.createElement("section");
     const h = document.createElement("h3"); h.className = "month-h"; h.textContent = monthLabel(item.date);
     const g = document.createElement("div"); g.className = "grid";
-    sec.append(h, g); sec._grid = g;
-    monthSections[key] = sec; $("gallery").append(sec);
+    sec.append(h, g); sec._grid = g; sec._key = key;
+    monthSections[key] = sec;
+    const rank = k => k === "undated" ? "" : k;           // undated goes last
+    const before = [...$("gallery").children].find(s => rank(s._key) < rank(key));
+    $("gallery").insertBefore(sec, before || null);
   }
   const img = document.createElement("img");
   img.loading = "lazy"; img.src = item.thumb; img.alt = item.date || ""; img.title = item.date || "";
@@ -284,21 +342,40 @@ function addPhoto(item) {
   sec._grid.append(img);
 }
 
+// pick a transform-origin so the 2x hover zoom stays inside the viewport (edge columns grow inward).
+// With origin offset o along an axis, the scaled box spans [p - o(Z-1), p + Z*size - o(Z-1)].
+const ZOOM = 2, ZOOM_PAD = 8;
+function fitZoom(img) {
+  const r = img.getBoundingClientRect(), k = ZOOM - 1;
+  const axis = (p, size, max) => {
+    const lo = (p + ZOOM * size - (max - ZOOM_PAD)) / k, hi = (p - ZOOM_PAD) / k;
+    return Math.min(Math.max(Math.min(Math.max(size / 2, lo), hi), 0), size);
+  };
+  img.style.transformOrigin = axis(r.left, r.width, document.documentElement.clientWidth) + "px " +
+                              axis(r.top, r.height, window.innerHeight) + "px";
+}
+$("gallery").addEventListener("mouseover", e => { if (e.target.matches(".grid img")) fitZoom(e.target); });
+
 function pick(id) {
   current = id; page = 1; lastNext = false;
+  seen = new Set(); doneMonths = new Set(); listOldest = null; listDone = false; jumped = false; navGen++;
   [...$("tabs").children].forEach(b => b.classList.toggle("on", +b.dataset.id === id));
   $("gallery").innerHTML = ""; monthSections = {};
   $("status").textContent = ""; $("prog").hidden = true; $("moreStatus").textContent = "";
   $("range").hidden = true; $("count").textContent = "…";
   loadPreviews();
+  loadMonths(id);               // queued behind page 1 by the API pacer
 }
 
 async function loadPreviews() {
   if (loading || current == null) return;
+  if (jumped) return loadNextMonth();
   loading = true; $("more").hidden = true; $("moreStatus").textContent = "Loading…";
   try {
     const d = await taggedPage(current, page);
     d.results.forEach(addPhoto);
+    if (d.results.length) listOldest = (d.results[d.results.length - 1].date || "").slice(0, 7) || listOldest;
+    if (!d.next) listDone = true;
     if (page === 1) $("count").textContent = (d.count != null ? d.count + " photos" : d.results.length + "+ photos");
     lastNext = d.next; page++;
     $("moreStatus").textContent = lastNext ? "" : "— end of photos —";
@@ -314,9 +391,91 @@ async function loadPreviews() {
 
 // auto-load the next page as the sentinel nears the viewport (infinite scroll)
 function maybeLoadMore() {
-  if (!lastNext || loading || current == null) return;
+  if (!(jumped ? nextMonth() : lastNext) || loading || current == null) return;
   const r = $("sentinel").getBoundingClientRect();
   if (r.top < window.innerHeight + 600) loadPreviews();
+}
+
+// ---- jump to month ----------------------------------------------------------
+// The plain listing only goes newest -> oldest, so reaching an old month means paging through
+// everything before it. Instead, a jump loads just that month (by_month?month_day=), and from
+// then on infinite scroll extends the bottom of the gallery one month at a time.
+function isDone(key) {          // every photo of this month is already in the gallery
+  return listDone || doneMonths.has(key) || (listOldest != null && key > listOldest);
+}
+function nextMonth() {          // next month to load below the oldest section shown
+  const keys = Object.keys(monthSections).filter(k => k !== "undated");
+  const bottom = keys.length ? keys.sort()[0] : "9999";
+  return months.find(m => m.key <= bottom && !isDone(m.key)) || null;
+}
+
+async function loadMonths(cid) {
+  $("jumpRow").hidden = true; months = [];
+  let resp;
+  try { resp = await apiGET("/api/portfoliov3/student_photos/date_range/", { kind: 1, student_id: cid }); }
+  catch { return; }             // no month list -> no nav; infinite scroll still works
+  if (cid !== current) return;
+  months = ((resp && resp.data) || []).filter(m => /^\d{4}-\d{2}/.test(m.month_day || "")).map(m => ({
+    key: m.month_day.slice(0, 7), day: m.month_day.slice(0, 7) + "-01",
+    label: m.month_str || monthLabel(m.month_day),
+  })).sort((a, b) => a.key < b.key ? 1 : -1);
+  if (!months.length) return;
+  const sel = $("jump"); sel.innerHTML = "";
+  sel.append(new Option("Choose a month…", ""));
+  let group = null;
+  for (const m of months) {     // one <optgroup> per year
+    const y = m.key.slice(0, 4);
+    if (!group || group.label !== y) { group = document.createElement("optgroup"); group.label = y; sel.append(group); }
+    group.append(new Option(m.label, m.key));
+  }
+  $("jumpStatus").textContent = ""; $("jumpRow").hidden = false;
+}
+
+// load every page of one month; onFirst runs once its first page is in
+async function loadMonth(m, onFirst) {
+  const cid = current, gen = navGen;
+  loading = true; $("more").hidden = true; $("moreStatus").textContent = "Loading…";
+  try {
+    for (let p = 1; ; p++) {
+      const d = await taggedPage(cid, p, m.day);
+      if (gen !== navGen) return;                        // child switched or a newer jump
+      d.results.forEach(addPhoto);
+      if (p === 1 && onFirst) onFirst();
+      if (!d.next) { doneMonths.add(m.key); break; }
+    }
+    $("moreStatus").textContent = "";
+  } catch (e) {
+    if (e.status === 401) { loading = false; return doLogout(); }
+    if (gen === navGen) { $("moreStatus").textContent = "Couldn't load " + m.label + ": " + e.message; $("more").hidden = false; }
+    throw e;
+  } finally {
+    loading = false;
+    if (cid !== current) loadPreviews();                 // a child switch waited on us
+  }
+}
+
+async function loadNextMonth() {
+  const m = nextMonth();
+  if (!m) { $("moreStatus").textContent = "— end of photos —"; $("more").hidden = true; return; }
+  try { await loadMonth(m); } catch { return; }          // error shown; "Load more" retries
+  $("more").hidden = !nextMonth();
+  if (!nextMonth()) $("moreStatus").textContent = "— end of photos —";
+  maybeLoadMore();
+}
+
+async function jumpTo(key) {
+  const m = months.find(x => x.key === key); if (!m) return;
+  const gen = ++navGen;                                  // supersedes any earlier jump
+  const show = () => { const s = monthSections[key]; if (s) s.scrollIntoView({ behavior: "smooth", block: "start" }); };
+  if (isDone(key)) { $("jumpStatus").textContent = monthSections[key] ? "" : "No photos that month"; return show(); }
+  $("jumpStatus").textContent = "Loading " + m.label + "…";
+  while (loading) { await sleep(100); if (gen !== navGen) return; }   // let the in-flight page finish
+  jumped = true;
+  try { await loadMonth(m, show); } catch { if (gen === navGen) $("jumpStatus").textContent = "Couldn't load " + m.label; return; }
+  if (gen !== navGen) return;
+  $("jumpStatus").textContent = monthSections[key] ? "" : "No photos that month";
+  $("more").hidden = !nextMonth();
+  maybeLoadMore();
 }
 
 // ---- single-photo modal ----------------------------------------------------
@@ -580,6 +739,7 @@ $("login").onsubmit = async e => {
 function doLogout() { token = null; children = []; current = null; clearSession(); $("u").value = ""; showLogin(); }
 $("logout").onclick = doLogout;
 $("more").onclick = loadPreviews;
+$("jump").onchange = e => { const k = e.target.value; e.target.value = ""; if (k) jumpTo(k); };
 $("modalClose").onclick = closeModal;
 $("modalDl").onclick = downloadOne;
 $("zoomIn").onclick = () => zoomAt(zoom * 1.5, null, null, true);
