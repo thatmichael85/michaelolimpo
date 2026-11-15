@@ -350,3 +350,22 @@
   .cf-panel-body { padding: 10px 12px; }
   .cf-notice { padding: 10px 12px; }
 }
+
+.cf-notice-summary {
+  cursor: pointer;
+  text-align: left;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 24px;
+}
+.cf-notice-summary:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 3px;
+  border-radius: var(--radius-sm);
+}
+.cf-notice-content {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding-top: 10px;
+}
