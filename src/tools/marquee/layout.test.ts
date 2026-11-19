@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { BULB_STEP_MS, balanceLines, blinkPeriodMs, bulbPositions, fitScale, scrollDurationMs, scrollRate, wrapToWidth, chooseLines } from './layout';
+import { BULB_STEP_MS, balanceLines, blinkHidden, blinkTiming, bulbPositions, fitScale, scrollDurationMs, scrollRate, wrapToWidth, chooseLines } from './layout';
 
 describe('fitScale', () => {
   it('fits within 92% width and 85% height', () => {
@@ -24,10 +24,23 @@ describe('scroll speed', () => {
 });
 
 describe('flashing cap', () => {
+  it('splits each blink cycle into visible and hidden time by the duty cycle', () => {
+    expect(blinkTiming({ blink: 'off', blinkMs: 1000, blinkDuty: 80 })).toBeNull();
+    expect(blinkTiming({ blink: 'on', blinkMs: 1000, blinkDuty: 80 })).toEqual({ periodMs: 1000, onMs: 800, offMs: 200 });
+  });
+
+  it('hides the text only during the off part of each cycle', () => {
+    const t = { periodMs: 1000, onMs: 800, offMs: 200 };
+    expect(blinkHidden(0, t)).toBe(false);
+    expect(blinkHidden(799, t)).toBe(false);
+    expect(blinkHidden(800, t)).toBe(true);
+    expect(blinkHidden(999, t)).toBe(true);
+    expect(blinkHidden(1000, t)).toBe(false);
+  });
+
   it('keeps blink and bulb chase at or under 3 flashes per second', () => {
-    expect(blinkPeriodMs('off')).toBeNull();
-    expect(blinkPeriodMs('slow')).toBe(1000);
-    expect(blinkPeriodMs('fast')!).toBeGreaterThanOrEqual(1000 / 3);
+    const fastest = blinkTiming({ blink: 'on', blinkMs: 400, blinkDuty: 50 })!;
+    expect(1000 / fastest.periodMs).toBeLessThanOrEqual(3);
     expect(BULB_STEP_MS).toBeGreaterThanOrEqual(1000 / 3);
   });
 });

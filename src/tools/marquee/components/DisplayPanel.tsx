@@ -1,12 +1,17 @@
+import { blinkTiming } from '../layout';
 import { LIMITS, type Settings } from '../settings';
 import type { SettingsApi } from '../useSettings';
 import { ColorField, Segmented, Slider } from './controls';
+
+/** 800 → "0.8", 1000 → "1", 1250 → "1.25". */
+const seconds = (ms: number) => String(+(ms / 1000).toFixed(2));
 
 const DARKS = ['#000000', '#120a00', '#0a0f2b', '#2b0040', '#002b1a', '#3a0000', '#1f1f1f', '#ffffff'];
 
 export function DisplayPanel({ settings: s, update }: Pick<SettingsApi, 'settings' | 'update'>) {
   const bg = s.background;
   const border = s.border;
+  const blink = blinkTiming(s);
   return (
     <section className="mq-panel" aria-label="Display">
       <h2 className="mq-panel__title">Display</h2>
@@ -76,10 +81,34 @@ export function DisplayPanel({ settings: s, update }: Pick<SettingsApi, 'setting
         onChange={(blink) => update({ blink })}
         options={[
           { value: 'off', label: 'Steady' },
-          { value: 'slow', label: 'Slow' },
-          { value: 'fast', label: 'Fast' },
+          { value: 'on', label: 'Blink' },
         ]}
       />
+      {blink && (
+        <>
+          <Slider
+            label="Cycle length"
+            min={LIMITS.blinkMs[0]}
+            max={LIMITS.blinkMs[1]}
+            step={100}
+            value={s.blinkMs}
+            tickLabels={[400, 1000, 2000, 3000]}
+            formatTick={(ms) => `${seconds(ms)}s`}
+            onChange={(blinkMs) => update({ blinkMs })}
+          />
+          <Slider
+            label="Visible"
+            min={LIMITS.blinkDuty[0]}
+            max={LIMITS.blinkDuty[1]}
+            step={10}
+            value={s.blinkDuty}
+            tickLabels={[10, 50, 90]}
+            formatTick={(pct) => `${pct}%`}
+            onChange={(blinkDuty) => update({ blinkDuty })}
+          />
+          <p className="mq-help">On {seconds(blink.onMs)} s · Off {seconds(blink.offMs)} s</p>
+        </>
+      )}
     </section>
   );
 }

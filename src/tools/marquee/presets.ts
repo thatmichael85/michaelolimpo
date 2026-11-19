@@ -69,7 +69,9 @@ export function randomStyle(s: Settings, rand: () => number = Math.random): Sett
     border: { style: pick(['none', 'solid', 'neon', 'bulbs'] as const), color: pick(BRIGHT), width: int(6, 24) },
     scroll: pick(['left', 'left', 'right', 'up', 'down', 'off'] as const),
     speed: int(4, 14),
-    blink: chance(0.85) ? 'off' : pick(['slow', 'fast'] as const),
+    blink: chance(0.85) ? 'off' : 'on',
+    blinkMs: int(4, 20) * 100,
+    blinkDuty: int(3, 9) * 10,
   });
 }
 

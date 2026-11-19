@@ -1,5 +1,5 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
-import { balanceLines, blinkPeriodMs, fitScale, scrollDurationMs } from '../layout';
+import { balanceLines, blinkTiming, fitScale, scrollDurationMs } from '../layout';
 import { segment } from '../segments';
 import { FONTS, type Settings } from '../settings';
 import { fontCss, textMeasurer } from '../style';
@@ -105,9 +105,13 @@ export function SmoothText({ settings: s, box }: { settings: Settings; box: Size
     trackStyle.animationDuration = `${scrollDurationMs(span + len, box.h, s.speed)}ms`;
   }
 
-  const blink = blinkPeriodMs(s.blink);
+  const blink = blinkTiming(s);
   const textStyle: CSSProperties & Record<string, string | number> = { ...fontCss(s), fontSize };
-  if (blink) textStyle['--mq-blink-ms'] = `${blink}ms`;
+  if (blink) {
+    // One keyframe set per 10% duty step (see marquee.css).
+    textStyle.animationName = `mq-blink-${s.blinkDuty}`;
+    textStyle.animationDuration = `${blink.periodMs}ms`;
+  }
 
   return (
     <>
