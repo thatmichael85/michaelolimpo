@@ -1,8 +1,8 @@
-import { useEffect, useLayoutEffect, useRef, useState, type CSSProperties } from 'react';
-import { blinkPeriodMs, fitScale, scrollDurationMs } from '../layout';
+import { useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
+import { balanceLines, blinkPeriodMs, fitScale, scrollDurationMs } from '../layout';
 import { segment } from '../segments';
 import type { Settings } from '../settings';
-import { fontCss } from '../style';
+import { fontCss, textMeasurer } from '../style';
 import type { Size } from '../useElementSize';
 
 /** Text is measured at this font size, then scaled. */
@@ -54,13 +54,22 @@ function Content({ s, singleLine }: { s: Settings; singleLine: boolean }) {
 export function SmoothText({ settings: s, box }: { settings: Settings; box: Size }) {
   const horizontal = s.scroll === 'left' || s.scroll === 'right';
   const vertical = s.scroll === 'up' || s.scroll === 'down';
-  const shown = s.caps ? s.text.toUpperCase() : s.text;
+  const fontsLoaded = useFontsLoaded();
+  const upper = s.caps ? s.text.toUpperCase() : s.text;
+  // A still, fit-to-screen sign wraps onto balanced lines so it stays as big as possible.
+  const balance = s.scroll === 'off' && s.fit;
+  const balanced = useMemo(() => {
+    if (!balance) return null;
+    const widthOf = textMeasurer(s, REF);
+    return widthOf ? balanceLines(upper, widthOf, REF * 1.1, box).join('\n') : null;
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- font fields listed individually
+  }, [balance, upper, s.font, s.bold, s.italic, s.letterSpacing, box.w, box.h, fontsLoaded]);
+  const shown = balanced ?? upper;
   const measureText = horizontal ? shown.replace(/\r?\n/g, ' ') : shown;
-  const lines = horizontal ? 1 : Math.max(1, s.text.split('\n').length);
+  const lines = horizontal ? 1 : Math.max(1, shown.split('\n').length);
 
   const measureRef = useRef<HTMLDivElement>(null);
   const [natural, setNatural] = useState<Size>({ w: 0, h: 0 });
-  const fontsLoaded = useFontsLoaded();
   useLayoutEffect(() => {
     const el = measureRef.current;
     if (!el) return;
@@ -92,7 +101,7 @@ export function SmoothText({ settings: s, box }: { settings: Settings; box: Size
     <>
       <div className={`mq-track mq-track--${horizontal ? 'x' : vertical ? 'y' : 'static'}`} style={trackStyle}>
         <div className={`mq-text${blink ? ' mq-blink' : ''}${horizontal ? ' mq-text--nowrap' : ''}`} style={textStyle}>
-          <Content s={s} singleLine={horizontal} />
+          <Content s={balanced ? { ...s, text: balanced } : s} singleLine={horizontal} />
         </div>
       </div>
       <div ref={measureRef} className={`mq-text mq-measure${horizontal ? ' mq-text--nowrap' : ''}`} style={{ ...fontCss(s), fontSize: REF }} aria-hidden="true">

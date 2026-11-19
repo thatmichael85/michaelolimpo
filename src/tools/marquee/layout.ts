@@ -12,6 +12,43 @@ export function fitScale(content: Size, box: Size, axis: 'both' | 'height'): num
   return axis === 'height' ? byHeight : Math.min(byHeight, (box.w * 0.92) / content.w);
 }
 
+/** Splits words into at most n lines, breaking near width/n. */
+function splitInto(words: string[], n: number, widthOf: (s: string) => number): string[] {
+  const target = widthOf(words.join(' ')) / n;
+  const lines: string[] = [];
+  let cur = '';
+  for (const word of words) {
+    const next = cur ? `${cur} ${word}` : word;
+    const overshoot = widthOf(next) - target;
+    if (cur && lines.length < n - 1 && overshoot > target - widthOf(cur)) {
+      lines.push(cur);
+      cur = word;
+    } else {
+      cur = next;
+    }
+  }
+  return [...lines, cur];
+}
+
+/**
+ * For a still, fit-to-screen sign: wraps words onto the number of lines that makes the
+ * text biggest in the box, so a long message doesn't shrink to an unreadable single line.
+ * Line breaks the user typed are kept as-is.
+ */
+export function balanceLines(text: string, widthOf: (s: string) => number, lineH: number, box: Size, maxLines = 5): string[] {
+  if (text.includes('\n')) return text.split(/\r?\n/);
+  const words = text.trim().split(/\s+/).filter(Boolean);
+  let best = [text.trim()];
+  let bestScale = 0;
+  for (let n = 1; n <= Math.min(maxLines, words.length); n++) {
+    const lines = splitInto(words, n, widthOf);
+    const widest = Math.max(1, ...lines.map(widthOf));
+    const scale = Math.min((box.w * 0.92) / widest, (box.h * 0.85) / (lines.length * lineH));
+    if (scale > bestScale) [best, bestScale] = [lines, scale];
+  }
+  return best;
+}
+
 /** Scroll speed in display heights per second, so preview and full screen look the same. */
 export function scrollRate(speed: number): number {
   return 0.15 * speed;

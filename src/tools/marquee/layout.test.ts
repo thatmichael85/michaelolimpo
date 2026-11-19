@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { BULB_STEP_MS, blinkPeriodMs, bulbPositions, fitScale, scrollDurationMs, scrollRate } from './layout';
+import { BULB_STEP_MS, balanceLines, blinkPeriodMs, bulbPositions, fitScale, scrollDurationMs, scrollRate } from './layout';
 
 describe('fitScale', () => {
   it('fits within 92% width and 85% height', () => {
@@ -28,6 +28,24 @@ describe('flashing cap', () => {
     expect(blinkPeriodMs('slow')).toBe(1000);
     expect(blinkPeriodMs('fast')!).toBeGreaterThanOrEqual(1000 / 3);
     expect(BULB_STEP_MS).toBeGreaterThanOrEqual(1000 / 3);
+  });
+});
+
+describe('balanceLines', () => {
+  const widthOf = (s: string) => [...s].length * 10;
+
+  it('wraps a still sign onto the line count that gives the biggest text', () => {
+    const lines = balanceLines('WE LOVE YOU 💜', widthOf, 12, { w: 460, h: 320 });
+    expect(lines).toHaveLength(3);
+    expect(lines.join(' ')).toBe('WE LOVE YOU 💜');
+  });
+
+  it('keeps a short message on one line', () => {
+    expect(balanceLines('HI', widthOf, 12, { w: 460, h: 320 })).toEqual(['HI']);
+  });
+
+  it('respects line breaks the user typed', () => {
+    expect(balanceLines('GO\nTEAM GO', widthOf, 12, { w: 460, h: 320 })).toEqual(['GO', 'TEAM GO']);
   });
 });
 

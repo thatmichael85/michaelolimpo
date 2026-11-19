@@ -1,3 +1,4 @@
+import { balanceLines } from './layout';
 import { sampleCells, type CellGrid } from './led';
 import type { Settings } from './settings';
 import { fontShorthand } from './style';
@@ -25,7 +26,7 @@ export async function rasterizeText(s: Settings, view: { cols: number; rows: num
   const horizontal = s.scroll === 'left' || s.scroll === 'right';
   const vertical = s.scroll === 'up' || s.scroll === 'down';
   const raw = s.caps ? s.text.toUpperCase() : s.text;
-  const lines = horizontal ? [raw.replace(/\r?\n/g, ' ')] : raw.split(/\r?\n/);
+  let lines = horizontal ? [raw.replace(/\r?\n/g, ' ')] : raw.split(/\r?\n/);
   const measure = scratch(1, 1);
   if (!measure) return null;
 
@@ -37,6 +38,12 @@ export async function rasterizeText(s: Settings, view: { cols: number; rows: num
   };
   await document.fonts?.load(fontShorthand(s, 100), raw).catch(() => undefined);
   setFont(measure, lineCells);
+  if (!horizontal && !vertical && s.fit) {
+    // A still sign wraps onto balanced lines so the dots stay big enough to read.
+    lines = balanceLines(raw, (l) => measure.measureText(l).width, lineCells * S, { w: view.cols * S, h: view.rows * S });
+    lineCells = (0.85 * view.rows) / lines.length;
+    setFont(measure, lineCells);
+  }
   let widest = Math.max(1, ...lines.map((l) => measure.measureText(l).width));
   if (!horizontal && (s.fit || widest > view.cols * S)) {
     // Static/vertical text must fit the width of the board.
