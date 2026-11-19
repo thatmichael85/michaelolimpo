@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { sampleCells, stripLength, windowCells, type CellGrid } from './led';
+import { blendCells, sampleCells, stripLength, windowCells, type CellGrid } from './led';
 
 /** Builds an RGBA image where `paint(x, y)` returns [r,g,b,a] or null for transparent. */
 function image(width: number, height: number, paint: (x: number, y: number) => number[] | null) {
@@ -59,6 +59,21 @@ describe('windowCells', () => {
     const tall = sampleCells(image(1, 2, () => [1, 2, 3, 255]), 1, 2);
     const w = windowCells(tall, { cols: 1, rows: 3 }, 1, 'y', 3);
     expect([0, 1, 2].map((r) => cell(w, 0, r)[3])).toEqual([255, 0, 0]);
+  });
+});
+
+describe('blendCells', () => {
+  const lit = (rgb: number[]) => sampleCells(image(1, 1, () => [...rgb, 255]), 1, 1);
+  const off = sampleCells(image(1, 1, () => null), 1, 1);
+
+  it('fades a dot between two scroll positions for smooth motion', () => {
+    expect(cell(blendCells(lit([200, 0, 0]), off, 0), 0, 0)).toEqual([200, 0, 0, 255]);
+    expect(cell(blendCells(lit([200, 0, 0]), off, 0.25), 0, 0)).toEqual([200, 0, 0, 191]);
+    expect(cell(blendCells(off, lit([0, 0, 200]), 0.5), 0, 0)).toEqual([0, 0, 200, 128]);
+  });
+
+  it('mixes colours when both positions are lit', () => {
+    expect(cell(blendCells(lit([200, 0, 0]), lit([0, 0, 200]), 0.5), 0, 0)).toEqual([100, 0, 100, 255]);
   });
 });
 

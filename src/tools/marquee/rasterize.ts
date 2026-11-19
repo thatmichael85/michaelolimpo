@@ -1,4 +1,4 @@
-import { balanceLines } from './layout';
+import { balanceLines, wrapToWidth } from './layout';
 import { sampleCells, type CellGrid } from './led';
 import type { Settings } from './settings';
 import { fontShorthand } from './style';
@@ -33,24 +33,34 @@ export async function rasterizeText(s: Settings, view: { cols: number; rows: num
   // Line height in cells, then font size in supersampled pixels.
   let lineCells = ((s.fit ? 85 : s.size) / 100) * view.rows / lines.length;
   const setFont = (ctx: Ctx, cells: number) => {
-    ctx.font = fontShorthand(s, cells * S * 0.9);
-    if ('letterSpacing' in ctx) ctx.letterSpacing = `${s.letterSpacing * cells * S * 0.9}px`;
+    const px = cells * S * 0.9;
+    ctx.font = fontShorthand(s, px);
+    // At least one dot between letters, or neighbouring letters merge into blobs.
+    if ('letterSpacing' in ctx) ctx.letterSpacing = `${Math.max(s.letterSpacing * px, S)}px`;
   };
+  const widthOf = (l: string) => measure.measureText(l).width;
   await document.fonts?.load(fontShorthand(s, 100), raw).catch(() => undefined);
   setFont(measure, lineCells);
   if (!horizontal && !vertical && s.fit) {
     // A still sign wraps onto balanced lines so the dots stay big enough to read.
-    lines = balanceLines(raw, (l) => measure.measureText(l).width, lineCells * S, { w: view.cols * S, h: view.rows * S });
+    lines = balanceLines(raw, widthOf, lineCells * S, { w: view.cols * S, h: view.rows * S });
     lineCells = (0.85 * view.rows) / lines.length;
     setFont(measure, lineCells);
+  } else if (!horizontal) {
+    // Vertical / still signs wrap onto more lines rather than shrinking the letters.
+    lines = wrapToWidth(raw, widthOf, view.cols * S * 0.92);
+    if (!vertical && lines.length * lineCells > view.rows * 0.95) {
+      lineCells = (view.rows * 0.95) / lines.length;
+      setFont(measure, lineCells);
+    }
   }
-  let widest = Math.max(1, ...lines.map((l) => measure.measureText(l).width));
+  let widest = Math.max(1, ...lines.map(widthOf));
   if (!horizontal && (s.fit || widest > view.cols * S)) {
-    // Static/vertical text must fit the width of the board.
+    // Whatever still overflows (a single long word) shrinks to fit the board's width.
     const scale = Math.min(s.fit ? Infinity : 1, (view.cols * S * 0.92) / widest);
     lineCells *= s.fit ? Math.min(1, scale) : scale;
     setFont(measure, lineCells);
-    widest = Math.max(1, ...lines.map((l) => measure.measureText(l).width));
+    widest = Math.max(1, ...lines.map(widthOf));
   }
 
   const lineH = lineCells * S;

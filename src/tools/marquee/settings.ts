@@ -1,4 +1,6 @@
-export type FontId = 'bebas' | 'anton' | 'bungee' | 'monoton' | 'pacifico' | 'pressstart';
+export type FontId =
+  | 'sans' | 'rounded' | 'serif' | 'mono'
+  | 'bebas' | 'anton' | 'bungee' | 'monoton' | 'pacifico' | 'pressstart';
 export type RenderMode = 'smooth' | 'led' | 'pixel';
 export type ScrollDir = 'off' | 'left' | 'right' | 'up' | 'down';
 export type BorderStyle = 'none' | 'solid' | 'neon' | 'bulbs';
@@ -35,6 +37,12 @@ export interface Settings {
 export const MAX_TEXT = 500;
 
 export const FONTS: Record<FontId, { label: string; family: string }> = {
+  // Everyday fonts built into the iPad (no download, work offline).
+  sans: { label: 'Sans', family: "system-ui, -apple-system, 'Helvetica Neue', Arial" },
+  rounded: { label: 'Rounded', family: "ui-rounded, 'SF Pro Rounded', system-ui" },
+  serif: { label: 'Serif', family: "ui-serif, Georgia, 'Times New Roman', serif" },
+  mono: { label: 'Mono', family: "ui-monospace, Menlo, 'Courier New', monospace" },
+  // Display fonts, self-hosted.
   bebas: { label: 'Bebas', family: "'Bebas Neue'" },
   anton: { label: 'Anton', family: "'Anton'" },
   bungee: { label: 'Bungee', family: "'Bungee'" },
@@ -49,7 +57,7 @@ export const LIMITS = {
   letterSpacing: [-0.05, 0.5],
   angle: [0, 360],
   borderWidth: [2, 40],
-  speed: [1, 10],
+  speed: [1, 20],
 } as const satisfies Record<string, readonly [number, number]>;
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -72,7 +80,7 @@ export const DEFAULT_SETTINGS: Settings = {
   background: { kind: 'solid', color: '#000000', color2: '#2b0040', angle: 135 },
   border: { style: 'none', color: '#ffd43b', width: 12 },
   scroll: 'left',
-  speed: 4,
+  speed: 8,
   blink: 'off',
 };
 

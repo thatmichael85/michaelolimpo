@@ -40,6 +40,41 @@ describe('PlayView', () => {
     expect(screen.queryByRole('button', { name: 'Edit' })).toBeNull();
   });
 
+  it('tells you how to get back, then gets out of the way', () => {
+    render(<PlayView settings={DEFAULT_SETTINGS} onExit={() => {}} />);
+    expect(screen.getByText('Press and hold anywhere to edit')).toBeInTheDocument();
+    act(() => vi.advanceTimersByTime(3000));
+    expect(screen.queryByText('Press and hold anywhere to edit')).toBeNull();
+  });
+
+  it('Escape returns to setup (keyboard)', () => {
+    const onExit = vi.fn();
+    render(<PlayView settings={DEFAULT_SETTINGS} onExit={onExit} />);
+    fireEvent.keyDown(window, { key: 'Escape' });
+    expect(onExit).toHaveBeenCalledOnce();
+  });
+
+  it('leaving browser full screen returns to setup', () => {
+    const onExit = vi.fn();
+    render(<PlayView settings={DEFAULT_SETTINGS} onExit={onExit} />);
+    Object.defineProperty(document, 'fullscreenElement', { configurable: true, value: document.body });
+    fireEvent(document, new Event('fullscreenchange'));
+    expect(onExit).not.toHaveBeenCalled();
+    Object.defineProperty(document, 'fullscreenElement', { configurable: true, value: null });
+    fireEvent(document, new Event('fullscreenchange'));
+    expect(onExit).toHaveBeenCalledOnce();
+  });
+
+  it('has a close (X) button in the bottom-left that returns to setup', () => {
+    const onExit = vi.fn();
+    render(<PlayView settings={DEFAULT_SETTINGS} onExit={onExit} />);
+    const close = screen.getByRole('button', { name: 'Close' });
+    expect(close).toHaveClass('mq-close');
+    expect(close).toHaveTextContent('✕');
+    fireEvent.click(close);
+    expect(onExit).toHaveBeenCalledOnce();
+  });
+
   it('Edit returns to setup', () => {
     const onExit = vi.fn();
     render(<PlayView settings={DEFAULT_SETTINGS} onExit={onExit} />);

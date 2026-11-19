@@ -68,6 +68,11 @@ export function SmoothText({ settings: s, box }: { settings: Settings; box: Size
   const measureText = horizontal ? shown.replace(/\r?\n/g, ' ') : shown;
   const lines = horizontal ? 1 : Math.max(1, shown.split('\n').length);
 
+  // Font size from the Text size setting; wrapping text is measured at the width it will wrap to.
+  const sizedFont = ((s.size / 100) * box.h) / lines;
+  const wraps = !horizontal && !s.fit;
+  const measureWidth = wraps ? `${(box.w * REF) / sizedFont}px` : undefined;
+
   const measureRef = useRef<HTMLDivElement>(null);
   const [natural, setNatural] = useState<Size>({ w: 0, h: 0 });
   useLayoutEffect(() => {
@@ -75,11 +80,14 @@ export function SmoothText({ settings: s, box }: { settings: Settings; box: Size
     if (!el) return;
     const next = { w: el.offsetWidth, h: el.offsetHeight };
     setNatural((prev) => (prev.w === next.w && prev.h === next.h ? prev : next));
-  }, [measureText, s.font, s.bold, s.italic, s.letterSpacing, fontsLoaded]);
+  }, [measureText, measureWidth, s.font, s.bold, s.italic, s.letterSpacing, fontsLoaded]);
 
-  const fontSize = s.fit
-    ? REF * fitScale(natural, box, horizontal ? 'height' : 'both')
-    : ((s.size / 100) * box.h) / lines;
+  let fontSize = s.fit ? REF * fitScale(natural, box, horizontal ? 'height' : 'both') : sizedFont;
+  if (wraps && !vertical) {
+    // A still sign never runs off the top and bottom: shrink until the wrapped text fits.
+    const wrappedH = (natural.h * sizedFont) / REF;
+    if (wrappedH > box.h * 0.95) fontSize = (sizedFont * box.h * 0.95) / wrappedH;
+  }
   const k = fontSize / REF;
   const text = { w: natural.w * k, h: natural.h * k };
 
@@ -104,7 +112,7 @@ export function SmoothText({ settings: s, box }: { settings: Settings; box: Size
           <Content s={balanced ? { ...s, text: balanced } : s} singleLine={horizontal} />
         </div>
       </div>
-      <div ref={measureRef} className={`mq-text mq-measure${horizontal ? ' mq-text--nowrap' : ''}`} style={{ ...fontCss(s), fontSize: REF }} aria-hidden="true">
+      <div ref={measureRef} className={`mq-text mq-measure${horizontal ? ' mq-text--nowrap' : ''}`} style={{ ...fontCss(s), fontSize: REF, width: measureWidth }} aria-hidden="true">
         {measureText}
       </div>
     </>

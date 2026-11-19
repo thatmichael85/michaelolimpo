@@ -38,6 +38,12 @@ describe('SetupPage', () => {
     expect(screen.getByRole('checkbox', { name: 'Outline' })).toBeDisabled();
   });
 
+  it('labels the text size so it is not mistaken for a dot setting', () => {
+    render(<Harness />);
+    expect(screen.getByLabelText('Text size')).toBeInTheDocument();
+    expect(screen.queryByLabelText('Size')).toBeNull();
+  });
+
   it('needs a second tap to reset, keeps the text, and never uses confirm()', () => {
     const confirm = vi.spyOn(window, 'confirm');
     render(<Harness />);
@@ -73,6 +79,16 @@ describe('SetupPage', () => {
     render(<Harness />);
     typeMessage('SAVED');
     expect(localStorage.getItem('marquee:v1')).toContain('SAVED');
+  });
+
+  it('shows tick marks and numbers on the speed bar', () => {
+    render(<Harness />);
+    const speed = screen.getByLabelText('Speed') as HTMLInputElement;
+    expect(speed.max).toBe('20');
+    const ticks = document.getElementById(speed.getAttribute('list')!)!;
+    expect(ticks.querySelectorAll('option')).toHaveLength(20);
+    const labels = speed.closest('.mq-field')!.querySelectorAll('.mq-tick__label');
+    expect(Array.from(labels, (l) => l.textContent)).toEqual(['1', '5', '10', '15', '20']);
   });
 
   it('shows speed only while scrolling', () => {

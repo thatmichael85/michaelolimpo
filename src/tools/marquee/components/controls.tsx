@@ -46,22 +46,49 @@ export function Slider(props: {
   step?: number;
   onChange: (v: number) => void;
   disabled?: boolean;
+  /** Draws a tick at every step, numbering these values. */
+  tickLabels?: number[];
 }) {
   const id = useId();
+  const step = props.step ?? 1;
+  const ticks = props.tickLabels
+    ? Array.from({ length: Math.round((props.max - props.min) / step) + 1 }, (_, i) => props.min + i * step)
+    : null;
+  const pct = (v: number) => `${((v - props.min) / (props.max - props.min)) * 100}%`;
+  const input = (
+    <input
+      id={id}
+      className="mq-range"
+      type="range"
+      min={props.min}
+      max={props.max}
+      step={step}
+      value={props.value}
+      disabled={props.disabled}
+      list={ticks ? `${id}-ticks` : undefined}
+      onChange={(e) => props.onChange(Number(e.target.value))}
+    />
+  );
   return (
     <div className="mq-field mq-field--row">
       <label className="mq-label" htmlFor={id}>{props.label}</label>
-      <input
-        id={id}
-        className="mq-range"
-        type="range"
-        min={props.min}
-        max={props.max}
-        step={props.step ?? 1}
-        value={props.value}
-        disabled={props.disabled}
-        onChange={(e) => props.onChange(Number(e.target.value))}
-      />
+      {ticks ? (
+        <div className="mq-ticked">
+          {input}
+          <datalist id={`${id}-ticks`}>
+            {ticks.map((t) => <option key={t} value={t} />)}
+          </datalist>
+          <div className="mq-ticks" aria-hidden="true">
+            {ticks.map((t) => (
+              <span key={t} className={`mq-tick${props.tickLabels!.includes(t) ? ' mq-tick--major' : ''}`} style={{ left: pct(t) }}>
+                {props.tickLabels!.includes(t) && <span className="mq-tick__label">{t}</span>}
+              </span>
+            ))}
+          </div>
+        </div>
+      ) : (
+        input
+      )}
     </div>
   );
 }

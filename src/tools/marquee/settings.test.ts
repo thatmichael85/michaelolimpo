@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { DEFAULT_SETTINGS, MAX_TEXT, sanitize } from './settings';
+import { DEFAULT_SETTINGS, FONTS, MAX_TEXT, sanitize } from './settings';
 import { applyPreset, resetStyle } from './presets';
 import { loadSettings, saveSettings } from './storage';
 
@@ -37,6 +37,11 @@ describe('sanitize', () => {
     expect(s.scroll).toBe(DEFAULT_SETTINGS.scroll);
   });
 
+  it('offers 20 speed steps', () => {
+    expect(sanitize({ speed: 25 }).speed).toBe(20);
+    expect(sanitize({ speed: 13 }).speed).toBe(13);
+  });
+
   it('keeps the default colour when a colour is not #rrggbb', () => {
     const s = sanitize({ version: 7, color: 'red', border: { color: '#12345' } });
     expect(s.color).toBe(DEFAULT_SETTINGS.color);
@@ -47,6 +52,13 @@ describe('sanitize', () => {
   it('keeps valid nested values while repairing invalid siblings', () => {
     const s = sanitize({ background: { kind: 'gradient', color: '#ff0000', angle: 'x' } });
     expect(s.background).toEqual({ ...DEFAULT_SETTINGS.background, kind: 'gradient', color: '#ff0000' });
+  });
+});
+
+describe('fonts', () => {
+  it('offers everyday system fonts alongside the display fonts', () => {
+    expect(Object.keys(FONTS)).toEqual(expect.arrayContaining(['sans', 'rounded', 'serif', 'mono', 'bebas']));
+    expect(sanitize({ font: 'serif' }).font).toBe('serif');
   });
 });
 
