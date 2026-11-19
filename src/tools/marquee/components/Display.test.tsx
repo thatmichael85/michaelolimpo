@@ -77,10 +77,11 @@ describe('Display (smooth)', () => {
     expect(document.querySelector('circle')).toBeNull();
   });
 
-  it('blinks at the capped fast rate', () => {
-    show({ blink: 'fast' });
+  it('blinks with the chosen cycle length and visible share', () => {
+    show({ blink: 'on', blinkMs: 1200, blinkDuty: 80 });
     const blink = document.querySelector<HTMLElement>('.mq-blink')!;
-    expect(blink.style.getPropertyValue('--mq-blink-ms')).toBe('400ms');
+    expect(blink.style.animationName).toBe('mq-blink-80');
+    expect(blink.style.animationDuration).toBe('1200ms');
   });
 
   it('scrolls horizontally with a duration, and not at all when scroll is off', () => {

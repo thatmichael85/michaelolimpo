@@ -55,6 +55,23 @@ describe('sanitize', () => {
   });
 });
 
+describe('blink', () => {
+  it('defaults to steady with a 1 s cycle, half visible', () => {
+    expect(DEFAULT_SETTINGS).toMatchObject({ blink: 'off', blinkMs: 1000, blinkDuty: 50 });
+  });
+
+  it('keeps the cycle at or above 0.4 s (no more than 3 flashes a second) and snaps to slider steps', () => {
+    expect(sanitize({ blink: 'on', blinkMs: 100, blinkDuty: 95 })).toMatchObject({ blink: 'on', blinkMs: 400, blinkDuty: 90 });
+    expect(sanitize({ blinkMs: 1234, blinkDuty: 33 })).toMatchObject({ blinkMs: 1200, blinkDuty: 30 });
+    expect(sanitize({ blinkMs: 9000, blinkDuty: 1 })).toMatchObject({ blinkMs: 3000, blinkDuty: 10 });
+  });
+
+  it('carries over signs saved with the old Slow / Fast blink', () => {
+    expect(sanitize({ blink: 'slow' })).toMatchObject({ blink: 'on', blinkMs: 1000, blinkDuty: 50 });
+    expect(sanitize({ blink: 'fast' })).toMatchObject({ blink: 'on', blinkMs: 400, blinkDuty: 50 });
+  });
+});
+
 describe('fonts', () => {
   it('offers everyday system fonts alongside the display fonts', () => {
     expect(Object.keys(FONTS)).toEqual(expect.arrayContaining(['sans', 'rounded', 'serif', 'mono', 'bebas']));

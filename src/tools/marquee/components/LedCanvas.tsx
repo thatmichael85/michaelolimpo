@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
-import { blinkPeriodMs, scrollRate } from '../layout';
+import { blinkHidden, blinkTiming, scrollRate } from '../layout';
 import { blendCells, stripLength, windowCells, type CellGrid } from '../led';
 import { rasterizeText } from '../rasterize';
 import type { Settings } from '../settings';
@@ -42,7 +42,7 @@ export function LedCanvas({ settings: s, w, h }: { settings: Settings; w: number
     // eslint-disable-next-line react-hooks/exhaustive-deps -- `s` is listed field by field
   }, [text, font, bold, italic, caps, letterSpacing, size, fit, color, rainbow, scroll, cols, rows, fontsLoaded]);
 
-  const { speed, blink, unlit } = s;
+  const { speed, blink, blinkMs, blinkDuty, unlit } = s;
   useEffect(() => {
     const ctx = canvasRef.current?.getContext('2d');
     const glow = glowRef.current?.getContext('2d') ?? null;
@@ -52,7 +52,7 @@ export function LedCanvas({ settings: s, w, h }: { settings: Settings; w: number
     const axis = vertical ? 'y' : 'x';
     const { gap } = stripLength(vertical ? strip.rows : strip.cols, vertical ? rows : cols);
     const cellsPerSec = scrollRate(speed) * rows;
-    const blinkMs = blinkPeriodMs(blink);
+    const timing = blinkTiming({ blink, blinkMs, blinkDuty });
     const [ur, ug, ub] = rainbow ? [255, 255, 255] : hexRgb(color);
     const lit = ctx.createImageData(cols, rows);
     const frame = ctx.createImageData(cols, rows);
@@ -72,7 +72,7 @@ export function LedCanvas({ settings: s, w, h }: { settings: Settings; w: number
       const offset = !horizontal && !vertical
         ? 0
         : scroll === 'left' || scroll === 'up' ? moved - along : len - moved;
-      const off = blinkMs !== null && Math.floor(elapsed / (blinkMs / 2)) % 2 === 1;
+      const off = timing !== null && blinkHidden(elapsed, timing);
       const key = `${Math.round(offset * 32)}:${off}`;
       if (key === lastKey) return; // only redraw when the board visibly changes
       lastKey = key;
@@ -104,7 +104,7 @@ export function LedCanvas({ settings: s, w, h }: { settings: Settings; w: number
     };
     raf = requestAnimationFrame(draw);
     return () => cancelAnimationFrame(raf);
-  }, [strip, cols, rows, scroll, speed, blink, unlit, color, rainbow]);
+  }, [strip, cols, rows, scroll, speed, blink, blinkMs, blinkDuty, unlit, color, rainbow]);
 
   const style = {
     width: cols * pitch,

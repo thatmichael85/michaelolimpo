@@ -128,6 +128,18 @@ describe('SetupPage', () => {
     expect(Array.from(labels, (l) => l.textContent)).toEqual(['1', '5', '10', '15', '20']);
   });
 
+  it('controls blinking with two bars and spells out the on/off time', () => {
+    render(<Harness />);
+    expect(screen.queryByLabelText('Cycle length')).toBeNull();
+    fireEvent.click(screen.getByRole('radio', { name: 'Blink' }));
+    const cycle = screen.getByLabelText('Cycle length') as HTMLInputElement;
+    const visible = screen.getByLabelText('Visible') as HTMLInputElement;
+    expect([cycle.min, cycle.max, visible.min, visible.max]).toEqual(['400', '3000', '10', '90']);
+    expect(screen.getByText('On 0.5 s · Off 0.5 s')).toBeInTheDocument();
+    fireEvent.change(visible, { target: { value: '80' } });
+    expect(screen.getByText('On 0.8 s · Off 0.2 s')).toBeInTheDocument();
+  });
+
   it('shows speed only while scrolling', () => {
     render(<Harness />);
     expect(screen.getByLabelText('Speed')).toBeEnabled();

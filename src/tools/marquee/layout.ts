@@ -1,4 +1,4 @@
-import type { BlinkRate } from './settings';
+import type { Settings } from './settings';
 
 interface Size {
   w: number;
@@ -98,9 +98,25 @@ export function scrollDurationMs(travel: number, displayH: number, speed: number
   return (travel / (scrollRate(speed) * displayH)) * 1000;
 }
 
-/** Whole-sign flashing stays at or under 3 per second (photosensitivity guideline). */
-export function blinkPeriodMs(rate: BlinkRate): number | null {
-  return rate === 'off' ? null : rate === 'slow' ? 1000 : 400;
+export interface BlinkTiming {
+  periodMs: number;
+  onMs: number;
+  offMs: number;
+}
+
+/**
+ * Visible / hidden time per blink cycle from the duty cycle. Cycles are ≥ 400 ms (settings
+ * clamp), so whole-sign flashing stays at or under 3 per second (photosensitivity guideline).
+ */
+export function blinkTiming(s: Pick<Settings, 'blink' | 'blinkMs' | 'blinkDuty'>): BlinkTiming | null {
+  if (s.blink === 'off') return null;
+  const onMs = Math.round((s.blinkMs * s.blinkDuty) / 100);
+  return { periodMs: s.blinkMs, onMs, offMs: s.blinkMs - onMs };
+}
+
+/** Whether the text is in the hidden part of its blink cycle. */
+export function blinkHidden(elapsed: number, t: BlinkTiming): boolean {
+  return elapsed % t.periodMs >= t.onMs;
 }
 
 /** Each bulb toggles once per step, so ≥ 334 ms keeps the chase under 3 flashes/s. */

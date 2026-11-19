@@ -48,6 +48,7 @@ export function Slider(props: {
   disabled?: boolean;
   /** Draws a tick at every step, numbering these values. */
   tickLabels?: number[];
+  formatTick?: (v: number) => string;
 }) {
   const id = useId();
   const step = props.step ?? 1;
@@ -81,7 +82,7 @@ export function Slider(props: {
           <div className="mq-ticks" aria-hidden="true">
             {ticks.map((t) => (
               <span key={t} className={`mq-tick${props.tickLabels!.includes(t) ? ' mq-tick--major' : ''}`} style={{ left: pct(t) }}>
-                {props.tickLabels!.includes(t) && <span className="mq-tick__label">{t}</span>}
+                {props.tickLabels!.includes(t) && <span className="mq-tick__label">{props.formatTick ? props.formatTick(t) : t}</span>}
               </span>
             ))}
           </div>

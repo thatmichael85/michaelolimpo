@@ -4,7 +4,7 @@ export type FontId =
 export type RenderMode = 'smooth' | 'led' | 'pixel';
 export type ScrollDir = 'off' | 'left' | 'right' | 'up' | 'down';
 export type BorderStyle = 'none' | 'solid' | 'neon' | 'bulbs';
-export type BlinkRate = 'off' | 'slow' | 'fast';
+export type BlinkMode = 'off' | 'on';
 
 export interface Settings {
   version: 1;
@@ -31,7 +31,11 @@ export interface Settings {
   border: { style: BorderStyle; color: string; width: number };
   scroll: ScrollDir;
   speed: number;
-  blink: BlinkRate;
+  blink: BlinkMode;
+  /** One show-and-hide cycle, in ms (≥ 400 so it never flashes more than 3 times a second). */
+  blinkMs: number;
+  /** Share of each cycle the text is visible, in %. */
+  blinkDuty: number;
 }
 
 export const MAX_TEXT = 500;
@@ -59,6 +63,8 @@ export const LIMITS = {
   angle: [0, 360],
   borderWidth: [2, 40],
   speed: [1, 20],
+  blinkMs: [400, 3000],
+  blinkDuty: [10, 90],
 } as const satisfies Record<string, readonly [number, number]>;
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -83,6 +89,8 @@ export const DEFAULT_SETTINGS: Settings = {
   scroll: 'left',
   speed: 8,
   blink: 'off',
+  blinkMs: 1000,
+  blinkDuty: 50,
 };
 
 type Rec = Record<string, unknown>;
@@ -102,6 +110,8 @@ export function sanitize(raw: unknown): Settings {
   const d = DEFAULT_SETTINGS;
   const bg = isRec(r.background) ? r.background : {};
   const border = isRec(r.border) ? r.border : {};
+  // Signs saved before the duty-cycle controls used Slow / Fast.
+  const legacyBlinkMs = r.blink === 'slow' ? 1000 : r.blink === 'fast' ? 400 : null;
   return {
     version: 1,
     text: typeof r.text === 'string' ? r.text.slice(0, MAX_TEXT) : d.text,
@@ -132,6 +142,8 @@ export function sanitize(raw: unknown): Settings {
     },
     scroll: oneOf(r.scroll, ['off', 'left', 'right', 'up', 'down'], d.scroll),
     speed: num(r.speed, LIMITS.speed, d.speed),
-    blink: oneOf(r.blink, ['off', 'slow', 'fast'], d.blink),
+    blink: legacyBlinkMs !== null ? 'on' : oneOf(r.blink, ['off', 'on'], d.blink),
+    blinkMs: legacyBlinkMs ?? Math.round(num(r.blinkMs, LIMITS.blinkMs, d.blinkMs) / 100) * 100,
+    blinkDuty: Math.round(num(r.blinkDuty, LIMITS.blinkDuty, d.blinkDuty) / 10) * 10,
   };
 }
