@@ -11,6 +11,7 @@ export default defineConfig({
       input: {
         main: 'index.html',
         downloadphotos: 'tools/downloadphotos/index.html',
+        marquee: 'marquee/index.html',
       },
     },
   },
