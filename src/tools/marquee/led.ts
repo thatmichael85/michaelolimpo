@@ -11,8 +11,11 @@ interface Pixels {
   data: Uint8ClampedArray;
 }
 
-/** Averages each block of source pixels into one cell; a cell is lit when coverage ≥ threshold. */
-export function sampleCells(src: Pixels, cols: number, rows: number, threshold = 0.45 * 255): CellGrid {
+/**
+ * Averages each block of source pixels into one cell; a cell is lit when coverage ≥ threshold.
+ * A third is low enough that thin strokes and curves stay connected at LED resolution.
+ */
+export function sampleCells(src: Pixels, cols: number, rows: number, threshold = 0.33 * 255): CellGrid {
   const data = new Uint8ClampedArray(cols * rows * 4);
   for (let r = 0; r < rows; r++) {
     const y0 = Math.floor((r * src.height) / rows);

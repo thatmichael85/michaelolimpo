@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { BULB_STEP_MS, balanceLines, blinkPeriodMs, bulbPositions, fitScale, scrollDurationMs, scrollRate, wrapToWidth } from './layout';
+import { BULB_STEP_MS, balanceLines, blinkPeriodMs, bulbPositions, fitScale, scrollDurationMs, scrollRate, wrapToWidth, chooseLines } from './layout';
 
 describe('fitScale', () => {
   it('fits within 92% width and 85% height', () => {
@@ -59,6 +59,25 @@ describe('wrapToWidth', () => {
 
   it('keeps typed line breaks and leaves a too-long single word on its own line', () => {
     expect(wrapToWidth('HI\nSUPERCALIFRAGILISTIC', widthOf, 60)).toEqual(['HI', 'SUPERCALIFRAGILISTIC']);
+  });
+});
+
+describe('chooseLines', () => {
+  it('keeps the requested size when the wrapped text fits', () => {
+    const widthOf = (t: string) => [...t].length * 10;
+    expect(chooseLines('Hello GO 123 ✨', widthOf, 40, { w: 460, h: 320 }, false)).toEqual({ lines: ['Hello GO 123 ✨'], lineH: 40 });
+  });
+
+  it('switches to the biggest balanced layout when the wrap would be too tall, never smaller lines than needed', () => {
+    const widthOf = (t: string) => [...t].length * 50;
+    expect(chooseLines('Hello GO 123 ✨', widthOf, 200, { w: 460, h: 320 }, false)).toEqual({ lines: ['Hello GO', '123 ✨'], lineH: 152 });
+  });
+
+  it('fit fills the height with balanced lines', () => {
+    const widthOf = (t: string) => [...t].length * 10;
+    const { lines, lineH } = chooseLines('WE LOVE YOU 💜', widthOf, 12, { w: 460, h: 320 }, true);
+    expect(lines).toHaveLength(3);
+    expect(lineH).toBeCloseTo((0.85 * 320) / 3);
   });
 });
 

@@ -36,7 +36,8 @@ export interface Settings {
 
 export const MAX_TEXT = 500;
 
-export const FONTS: Record<FontId, { label: string; family: string }> = {
+/** `lined`: the font is drawn with built-in stripes/outlines (Monoton), so Outline and heavy Glow don't apply. */
+export const FONTS: Record<FontId, { label: string; family: string; lined?: boolean }> = {
   // Everyday fonts built into the iPad (no download, work offline).
   sans: { label: 'Sans', family: "system-ui, -apple-system, 'Helvetica Neue', Arial" },
   rounded: { label: 'Rounded', family: "ui-rounded, 'SF Pro Rounded', system-ui" },
@@ -46,7 +47,7 @@ export const FONTS: Record<FontId, { label: string; family: string }> = {
   bebas: { label: 'Bebas', family: "'Bebas Neue'" },
   anton: { label: 'Anton', family: "'Anton'" },
   bungee: { label: 'Bungee', family: "'Bungee'" },
-  monoton: { label: 'Monoton', family: "'Monoton'" },
+  monoton: { label: 'Monoton', family: "'Monoton'", lined: true },
   pacifico: { label: 'Pacifico', family: "'Pacifico'" },
   pressstart: { label: 'Arcade', family: "'Press Start 2P'" },
 };
