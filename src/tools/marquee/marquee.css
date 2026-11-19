@@ -63,6 +63,28 @@ body {
 .mq-blink { animation: mq-blink var(--mq-blink-ms) step-end infinite; }
 .mq-rainbow { animation: mq-hue 3s linear infinite; }
 
+/* LED / PIXEL: each canvas pixel is one cell, scaled up crisp; a tiled mask cuts the dots. */
+.mq-led, .mq-led-glow { position: absolute; }
+.mq-led {
+  image-rendering: pixelated;
+  -webkit-mask-size: var(--mq-pitch) var(--mq-pitch);
+  mask-size: var(--mq-pitch) var(--mq-pitch);
+}
+.mq-led--round {
+  -webkit-mask-image: radial-gradient(circle closest-side, #000 78%, transparent 88%);
+  mask-image: radial-gradient(circle closest-side, #000 78%, transparent 88%);
+}
+.mq-led--square {
+  -webkit-mask-image: linear-gradient(to right, #000 86%, transparent 86%), linear-gradient(to bottom, #000 86%, transparent 86%);
+  -webkit-mask-composite: source-in;
+  mask-image: linear-gradient(to right, #000 86%, transparent 86%), linear-gradient(to bottom, #000 86%, transparent 86%);
+  mask-composite: intersect;
+}
+.mq-led-glow {
+  filter: blur(calc(var(--mq-pitch) * 0.6));
+  opacity: 0.7;
+}
+
 .mq-frame { position: absolute; inset: 0; pointer-events: none; }
 .mq-bulbs {
   position: absolute;

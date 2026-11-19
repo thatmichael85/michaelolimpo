@@ -2,6 +2,7 @@ import type { CSSProperties } from 'react';
 import type { Settings } from '../settings';
 import { useElementSize } from '../useElementSize';
 import { BulbBorder } from './BulbBorder';
+import { LedCanvas } from './LedCanvas';
 import { SmoothText } from './SmoothText';
 
 /** Border widths in settings are px at full iPad landscape height. */
@@ -28,7 +29,9 @@ export function Display({ settings }: { settings: Settings }) {
   return (
     <div ref={ref} data-testid="mq-display" className="mq-display" style={{ background: backgroundCss(settings.background) }}>
       <div className="mq-stage" style={stageStyle}>
-        {box.w > 0 && box.h > 0 && <SmoothText settings={settings} box={box} />}
+        {box.w > 0 && box.h > 0 && (settings.render === 'smooth'
+          ? <SmoothText settings={settings} box={box} />
+          : <LedCanvas settings={settings} w={box.w} h={box.h} />)}
       </div>
       {(border.style === 'solid' || border.style === 'neon') && (
         <div className="mq-frame" style={{ boxShadow: frameShadow(border, bw) }} />

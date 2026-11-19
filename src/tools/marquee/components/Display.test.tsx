@@ -93,6 +93,19 @@ describe('Display (smooth)', () => {
     expect(document.querySelector('.mq-letters')).toBeNull();
   });
 
+  it('renders LED mode as a round-dot canvas instead of text', () => {
+    vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null);
+    show({ text: 'HI', render: 'led' });
+    expect(document.querySelector('canvas.mq-led.mq-led--round')).not.toBeNull();
+    expect(document.querySelector('.mq-letters')).toBeNull();
+  });
+
+  it('renders PIXEL mode with square dots', () => {
+    vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null);
+    show({ text: 'HI', render: 'pixel' });
+    expect(document.querySelector('canvas.mq-led.mq-led--square')).not.toBeNull();
+  });
+
   it('gives each rainbow letter its own staggered colour cycle', () => {
     show({ text: 'AB', rainbow: true });
     const spans = document.querySelectorAll<HTMLElement>('.mq-rainbow');
