@@ -38,6 +38,12 @@ describe('SetupPage', () => {
     expect(screen.getByRole('checkbox', { name: 'Outline' })).toBeDisabled();
   });
 
+  it('disables Outline for Monoton, which is already an outline font', () => {
+    render(<Harness />);
+    fireEvent.click(screen.getByRole('radio', { name: 'Monoton' }));
+    expect(screen.getByRole('checkbox', { name: 'Outline' })).toBeDisabled();
+  });
+
   it('labels the text size so it is not mistaken for a dot setting', () => {
     render(<Harness />);
     expect(screen.getByLabelText('Text size')).toBeInTheDocument();

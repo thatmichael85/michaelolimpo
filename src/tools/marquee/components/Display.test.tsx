@@ -46,6 +46,15 @@ describe('Display (smooth)', () => {
     expect(emoji.style.textShadow).toBe('');
   });
 
+  it('keeps Monoton crisp: no outline stroke and only a soft glow', () => {
+    show({ text: 'HI', font: 'monoton', glow: true, outline: true, color: '#ff4fd8' });
+    const letters = document.querySelector<HTMLElement>('.mq-letters')!;
+    expect(letters.style.webkitTextStroke).toBe('');
+    expect(letters.style.color).toBe('rgb(255, 79, 216)');
+    expect(letters.style.textShadow).not.toContain('0.45em');
+    expect(letters.style.textShadow).not.toBe('');
+  });
+
   it('has no glow when glow is off', () => {
     show({ text: 'HI', glow: false });
     expect(document.querySelector<HTMLElement>('.mq-letters')!.style.textShadow).toBe('');

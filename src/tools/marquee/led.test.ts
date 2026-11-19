@@ -22,10 +22,10 @@ describe('sampleCells', () => {
     expect(cell(g, 1, 0)[3]).toBe(0);
   });
 
-  it('uses a coverage threshold so half-covered edges snap on or off', () => {
-    // 10x1 cell; 4 of 10 pixels covered stays off, 6 of 10 lights up.
-    expect(cell(sampleCells(image(10, 1, (x) => (x < 4 ? [0, 255, 0, 255] : null)), 1, 1), 0, 0)[3]).toBe(0);
-    expect(cell(sampleCells(image(10, 1, (x) => (x < 6 ? [0, 255, 0, 255] : null)), 1, 1), 0, 0)).toEqual([0, 255, 0, 255]);
+  it('lights a dot at a third coverage so thin strokes and curves stay connected', () => {
+    // 10x1 cell; 2 of 10 pixels covered stays off, 4 of 10 lights up.
+    expect(cell(sampleCells(image(10, 1, (x) => (x < 2 ? [0, 255, 0, 255] : null)), 1, 1), 0, 0)[3]).toBe(0);
+    expect(cell(sampleCells(image(10, 1, (x) => (x < 4 ? [0, 255, 0, 255] : null)), 1, 1), 0, 0)).toEqual([0, 255, 0, 255]);
   });
 
   it('allocates memory per cell, not per source pixel', () => {

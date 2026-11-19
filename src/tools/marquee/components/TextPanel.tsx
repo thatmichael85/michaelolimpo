@@ -8,6 +8,8 @@ const pixelSize = (rows: number) => MIN_ROWS + MAX_ROWS - rows;
 
 export function TextPanel({ settings: s, update }: Pick<SettingsApi, 'settings' | 'update'>) {
   const dots = s.render !== 'smooth';
+  // Outline doesn't apply to dots, or to fonts that are already outlines (Monoton).
+  const noOutline = dots || FONTS[s.font].lined === true;
   return (
     <section className="mq-panel" aria-label="Text">
       <h2 className="mq-panel__title">Text</h2>
@@ -58,7 +60,7 @@ export function TextPanel({ settings: s, update }: Pick<SettingsApi, 'settings' 
         <Toggle label="Bold" checked={s.bold} onChange={(bold) => update({ bold })} />
         <Toggle label="Italic" checked={s.italic} onChange={(italic) => update({ italic })} />
         <Toggle label="CAPS" checked={s.caps} onChange={(caps) => update({ caps })} />
-        <Toggle label="Outline" checked={s.outline && !dots} disabled={dots} onChange={(outline) => update({ outline })} />
+        <Toggle label="Outline" checked={s.outline && !noOutline} disabled={noOutline} onChange={(outline) => update({ outline })} />
         <Toggle label="Glow" checked={s.glow} onChange={(glow) => update({ glow })} />
       </div>
       <Slider

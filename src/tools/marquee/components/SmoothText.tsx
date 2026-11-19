@@ -1,7 +1,7 @@
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
 import { balanceLines, blinkPeriodMs, fitScale, scrollDurationMs } from '../layout';
 import { segment } from '../segments';
-import type { Settings } from '../settings';
+import { FONTS, type Settings } from '../settings';
 import { fontCss, textMeasurer } from '../style';
 import type { Size } from '../useElementSize';
 
@@ -24,12 +24,16 @@ function useFontsLoaded(): number {
 
 function letterCss(s: Settings): CSSProperties {
   const glowColor = s.rainbow ? 'currentColor' : s.color;
+  // Striped fonts (Monoton) are already outlines: a stroke clogs the stripes and a wide glow blurs them.
+  const lined = FONTS[s.font].lined === true;
+  const outline = s.outline && !lined;
+  const glow = lined
+    ? `0 0 0.02em ${glowColor}, 0 0 0.08em ${glowColor}`
+    : `0 0 0.06em ${glowColor}, 0 0 0.2em ${glowColor}, 0 0 0.45em ${glowColor}`;
   return {
-    color: s.rainbow ? undefined : s.outline ? 'transparent' : s.color,
-    WebkitTextStroke: s.outline ? `0.035em ${s.rainbow ? 'currentColor' : s.color}` : undefined,
-    textShadow: s.glow
-      ? `0 0 0.06em ${glowColor}, 0 0 0.2em ${glowColor}, 0 0 0.45em ${glowColor}`
-      : undefined,
+    color: s.rainbow ? undefined : outline ? 'transparent' : s.color,
+    WebkitTextStroke: outline ? `0.035em ${s.rainbow ? 'currentColor' : s.color}` : undefined,
+    textShadow: s.glow ? glow : undefined,
   };
 }
 

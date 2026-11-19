@@ -67,6 +67,28 @@ export function wrapToWidth(text: string, widthOf: (s: string) => number, maxW: 
   });
 }
 
+/**
+ * Lines and line height for a still sign. Fit fills the height with balanced lines; otherwise
+ * the text wraps at the requested size, and only if that runs too tall does it switch to the
+ * balanced layout that keeps the letters as big as possible.
+ */
+export function chooseLines(
+  text: string,
+  widthOf: (s: string) => number,
+  lineH: number,
+  box: Size,
+  fit: boolean,
+): { lines: string[]; lineH: number } {
+  if (fit) {
+    const lines = balanceLines(text, widthOf, lineH, box);
+    return { lines, lineH: (0.85 * box.h) / lines.length };
+  }
+  const wrapped = wrapToWidth(text, widthOf, box.w * 0.92);
+  if (wrapped.length * lineH <= box.h * 0.95) return { lines: wrapped, lineH };
+  const lines = balanceLines(text, widthOf, lineH, box);
+  return { lines, lineH: Math.min(lineH, (box.h * 0.95) / lines.length) };
+}
+
 /** Scroll speed in display heights per second, so preview and full screen look the same. */
 export function scrollRate(speed: number): number {
   return 0.075 * speed;
