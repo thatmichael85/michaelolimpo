@@ -304,3 +304,11 @@ body {
 }
 .mq-help { margin: 0; font-size: 12px; color: var(--mq-text-dim); }
 .mq-led-glow--off { display: none; }
+/* Slider with tick marks: ticks inset by half the thumb so they line up with thumb positions. */
+.mq-ticked { position: relative; flex: 1; min-width: 0; padding-bottom: 20px; }
+.mq-ticked .mq-range { width: 100%; display: block; }
+.mq-ticks { position: absolute; left: 11px; right: 11px; bottom: 2px; height: 18px; pointer-events: none; }
+.mq-tick { position: absolute; top: 0; width: 1px; height: 5px; background: var(--mq-text-dim); transform: translateX(-50%); }
+.mq-tick--major { height: 9px; background: var(--mq-text); }
+.mq-tick__label { position: absolute; top: 10px; left: 50%; transform: translateX(-50%); font-size: 11px; color: var(--mq-text-dim); }
+.mq-field:has(.mq-range:disabled) .mq-ticks { opacity: 0.35; }

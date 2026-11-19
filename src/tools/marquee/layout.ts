@@ -69,7 +69,7 @@ export function wrapToWidth(text: string, widthOf: (s: string) => number, maxW: 
 
 /** Scroll speed in display heights per second, so preview and full screen look the same. */
 export function scrollRate(speed: number): number {
-  return 0.15 * speed;
+  return 0.075 * speed;
 }
 
 export function scrollDurationMs(travel: number, displayH: number, speed: number): number {

@@ -37,6 +37,25 @@ export function sampleCells(src: Pixels, cols: number, rows: number, threshold =
   return { cols, rows, data };
 }
 
+/**
+ * Cross-fades two neighbouring scroll positions (f = 0 → a, 1 → b). The dots stay put but
+ * brighten and dim as text passes, so motion glides instead of jumping a dot at a time.
+ */
+export function blendCells(a: CellGrid, b: CellGrid, f: number): CellGrid {
+  const data = new Uint8ClampedArray(a.data.length);
+  for (let i = 0; i < data.length; i += 4) {
+    const wa = ((1 - f) * a.data[i + 3]) / 255;
+    const wb = (f * b.data[i + 3]) / 255;
+    const w = wa + wb;
+    if (w === 0) continue;
+    data[i] = (a.data[i] * wa + b.data[i] * wb) / w;
+    data[i + 1] = (a.data[i + 1] * wa + b.data[i + 1] * wb) / w;
+    data[i + 2] = (a.data[i + 2] * wa + b.data[i + 2] * wb) / w;
+    data[i + 3] = w * 255;
+  }
+  return { cols: a.cols, rows: a.rows, data };
+}
+
 /** The gap after the text equals the view, so the text fully exits before it re-enters. */
 export function stripLength(textCells: number, viewCells: number): { period: number; gap: number } {
   return { gap: viewCells, period: textCells + viewCells };

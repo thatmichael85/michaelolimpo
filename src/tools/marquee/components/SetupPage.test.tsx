@@ -81,6 +81,16 @@ describe('SetupPage', () => {
     expect(localStorage.getItem('marquee:v1')).toContain('SAVED');
   });
 
+  it('shows tick marks and numbers on the speed bar', () => {
+    render(<Harness />);
+    const speed = screen.getByLabelText('Speed') as HTMLInputElement;
+    expect(speed.max).toBe('20');
+    const ticks = document.getElementById(speed.getAttribute('list')!)!;
+    expect(ticks.querySelectorAll('option')).toHaveLength(20);
+    const labels = speed.closest('.mq-field')!.querySelectorAll('.mq-tick__label');
+    expect(Array.from(labels, (l) => l.textContent)).toEqual(['1', '5', '10', '15', '20']);
+  });
+
   it('shows speed only while scrolling', () => {
     render(<Harness />);
     expect(screen.getByLabelText('Speed')).toBeEnabled();

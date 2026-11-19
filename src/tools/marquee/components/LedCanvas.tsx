@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type CSSProperties } from 'react';
 import { blinkPeriodMs, scrollRate } from '../layout';
-import { stripLength, windowCells, type CellGrid } from '../led';
+import { blendCells, stripLength, windowCells, type CellGrid } from '../led';
 import { rasterizeText } from '../rasterize';
 import type { Settings } from '../settings';
 
@@ -60,35 +60,44 @@ export function LedCanvas({ settings: s, w, h }: { settings: Settings; w: number
     let lastKey = '';
     let raf = 0;
 
+    const unlitAlpha = unlit === 'faint' ? UNLIT_ALPHA : 0;
+    const view = { cols, rows };
+
     const draw = (now: number) => {
       raf = requestAnimationFrame(draw);
       const elapsed = now - start;
-      const step = horizontal || vertical ? Math.floor((elapsed * cellsPerSec) / 1000) : 0;
+      const moved = horizontal || vertical ? (elapsed * cellsPerSec) / 1000 : 0;
       const along = vertical ? rows : cols;
       const len = vertical ? strip.rows : strip.cols;
       const offset = !horizontal && !vertical
         ? 0
-        : scroll === 'left' || scroll === 'up' ? step - along : len - step;
+        : scroll === 'left' || scroll === 'up' ? moved - along : len - moved;
       const off = blinkMs !== null && Math.floor(elapsed / (blinkMs / 2)) % 2 === 1;
-      const key = `${offset}:${off}`;
-      if (key === lastKey) return; // only redraw when the board actually changes
+      const key = `${Math.round(offset * 32)}:${off}`;
+      if (key === lastKey) return; // only redraw when the board visibly changes
       lastKey = key;
 
-      const view = windowCells(strip, { cols, rows }, offset, axis, gap);
-      for (let i = 0; i < view.data.length; i += 4) {
-        const on = !off && view.data[i + 3] > 0;
-        lit.data[i + 3] = on ? 255 : 0;
-        if (on) {
-          lit.data[i] = frame.data[i] = view.data[i];
-          lit.data[i + 1] = frame.data[i + 1] = view.data[i + 1];
-          lit.data[i + 2] = frame.data[i + 2] = view.data[i + 2];
-          frame.data[i + 3] = 255;
-        } else {
-          frame.data[i] = ur;
-          frame.data[i + 1] = ug;
-          frame.data[i + 2] = ub;
-          frame.data[i + 3] = unlit === 'faint' ? UNLIT_ALPHA : 0;
-        }
+      // Between two dot positions, cross-fade so the text glides across the fixed dots.
+      const whole = Math.floor(offset);
+      const frac = offset - whole;
+      const here = windowCells(strip, view, whole, axis, gap);
+      const cells = frac > 0 ? blendCells(here, windowCells(strip, view, whole + 1, axis, gap), frac) : here;
+
+      for (let i = 0; i < cells.data.length; i += 4) {
+        const a = off ? 0 : cells.data[i + 3] / 255;
+        const [r, g, b] = [cells.data[i], cells.data[i + 1], cells.data[i + 2]];
+        lit.data[i] = r;
+        lit.data[i + 1] = g;
+        lit.data[i + 2] = b;
+        lit.data[i + 3] = a * 255;
+        // Lit colour over the faint unlit dot.
+        const under = unlitAlpha * (1 - a);
+        const total = under + 255 * a;
+        frame.data[i + 3] = total;
+        if (total === 0) continue;
+        frame.data[i] = (ur * under + r * 255 * a) / total;
+        frame.data[i + 1] = (ug * under + g * 255 * a) / total;
+        frame.data[i + 2] = (ub * under + b * 255 * a) / total;
       }
       ctx.putImageData(frame, 0, 0);
       glow?.putImageData(lit, 0, 0);

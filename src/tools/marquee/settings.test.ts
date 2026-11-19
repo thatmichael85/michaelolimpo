@@ -37,6 +37,11 @@ describe('sanitize', () => {
     expect(s.scroll).toBe(DEFAULT_SETTINGS.scroll);
   });
 
+  it('offers 20 speed steps', () => {
+    expect(sanitize({ speed: 25 }).speed).toBe(20);
+    expect(sanitize({ speed: 13 }).speed).toBe(13);
+  });
+
   it('keeps the default colour when a colour is not #rrggbb', () => {
     const s = sanitize({ version: 7, color: 'red', border: { color: '#12345' } });
     expect(s.color).toBe(DEFAULT_SETTINGS.color);

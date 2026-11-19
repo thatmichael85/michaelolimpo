@@ -61,7 +61,15 @@ export function DisplayPanel({ settings: s, update }: Pick<SettingsApi, 'setting
           { value: 'down', label: '↓', name: 'Down' },
         ]}
       />
-      <Slider label="Speed" min={LIMITS.speed[0]} max={LIMITS.speed[1]} value={s.speed} disabled={s.scroll === 'off'} onChange={(speed) => update({ speed })} />
+      <Slider
+        label="Speed"
+        min={LIMITS.speed[0]}
+        max={LIMITS.speed[1]}
+        value={s.speed}
+        disabled={s.scroll === 'off'}
+        tickLabels={[1, 5, 10, 15, 20]}
+        onChange={(speed) => update({ speed })}
+      />
       <Segmented<Settings['blink']>
         label="Blink"
         value={s.blink}

@@ -57,7 +57,7 @@ export const LIMITS = {
   letterSpacing: [-0.05, 0.5],
   angle: [0, 360],
   borderWidth: [2, 40],
-  speed: [1, 10],
+  speed: [1, 20],
 } as const satisfies Record<string, readonly [number, number]>;
 
 export const DEFAULT_SETTINGS: Settings = {
@@ -80,7 +80,7 @@ export const DEFAULT_SETTINGS: Settings = {
   background: { kind: 'solid', color: '#000000', color2: '#2b0040', angle: 135 },
   border: { style: 'none', color: '#ffd43b', width: 12 },
   scroll: 'left',
-  speed: 4,
+  speed: 8,
   blink: 'off',
 };
 

@@ -16,9 +16,10 @@ describe('fitScale', () => {
 });
 
 describe('scroll speed', () => {
-  it('moves 0.15 display heights per second per speed step', () => {
-    expect(scrollRate(10)).toBeCloseTo(1.5);
-    expect(Math.round(scrollDurationMs(1640, 820, 10))).toBe(1333);
+  it('moves 0.075 display heights per second per speed step, up to 1.5 at speed 20', () => {
+    expect(scrollRate(1)).toBeCloseTo(0.075);
+    expect(scrollRate(20)).toBeCloseTo(1.5);
+    expect(Math.round(scrollDurationMs(1640, 820, 20))).toBe(1333);
   });
 });
 
