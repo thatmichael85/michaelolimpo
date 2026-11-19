@@ -57,6 +57,9 @@ export function PlayView({ settings, onExit }: { settings: Settings; onExit: () 
     <div className="mq-play" data-testid="mq-play" {...press} onContextMenu={(e) => e.preventDefault()}>
       <Display settings={settings} />
       {showHint && !showEdit && <div className="mq-play-hint">Press and hold anywhere to edit</div>}
+      <button type="button" className="mq-close" aria-label="Close" onPointerDown={(e) => e.stopPropagation()} onClick={onExit}>
+        ✕
+      </button>
       {showEdit && (
         <button type="button" className="mq-btn mq-edit" onPointerDown={(e) => e.stopPropagation()} onClick={onExit}>
           Edit

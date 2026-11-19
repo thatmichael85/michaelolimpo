@@ -65,6 +65,16 @@ describe('PlayView', () => {
     expect(onExit).toHaveBeenCalledOnce();
   });
 
+  it('has a close (X) button in the bottom-left that returns to setup', () => {
+    const onExit = vi.fn();
+    render(<PlayView settings={DEFAULT_SETTINGS} onExit={onExit} />);
+    const close = screen.getByRole('button', { name: 'Close' });
+    expect(close).toHaveClass('mq-close');
+    expect(close).toHaveTextContent('✕');
+    fireEvent.click(close);
+    expect(onExit).toHaveBeenCalledOnce();
+  });
+
   it('Edit returns to setup', () => {
     const onExit = vi.fn();
     render(<PlayView settings={DEFAULT_SETTINGS} onExit={onExit} />);
