@@ -1,0 +1,95 @@
+/* Marquee tool — independent dark palette; the landing page keeps its own theme. */
+:root {
+  color-scheme: dark;
+  --mq-bg: #07070a;
+  --mq-panel: #121218;
+  --mq-panel-2: #1b1b24;
+  --mq-border: #2a2a36;
+  --mq-text: #f4f4f6;
+  --mq-text-dim: #a3a3b2;
+  --mq-accent: #ffd43b;
+  --mq-accent-ink: #09090b;
+  --mq-play: #3bff8a;
+  --mq-danger: #ff6b6b;
+  --mq-radius: 14px;
+  --mq-font-ui: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+* { box-sizing: border-box; }
+html, body, #root { margin: 0; height: 100%; }
+body {
+  background: var(--mq-bg);
+  color: var(--mq-text);
+  font-family: var(--mq-font-ui);
+  -webkit-tap-highlight-color: transparent;
+  -webkit-text-size-adjust: 100%;
+}
+
+/* ---------- The sign ---------- */
+.mq-display {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  contain: strict;
+}
+.mq-stage { position: absolute; overflow: hidden; }
+
+.mq-track { position: absolute; display: flex; will-change: transform; }
+.mq-track--x { left: 0; top: 0; bottom: 0; align-items: center; }
+.mq-track--y { left: 0; right: 0; top: 0; justify-content: center; }
+.mq-track--static { inset: 0; align-items: center; justify-content: center; }
+.mq-track--x, .mq-track--y {
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+}
+
+.mq-text {
+  line-height: 1.1;
+  text-align: center;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+.mq-text--nowrap { white-space: pre; }
+.mq-measure {
+  position: absolute;
+  visibility: hidden;
+  pointer-events: none;
+  left: 0;
+  top: 0;
+  width: max-content;
+}
+
+.mq-blink { animation: mq-blink var(--mq-blink-ms) step-end infinite; }
+.mq-rainbow { animation: mq-hue 3s linear infinite; }
+
+.mq-frame { position: absolute; inset: 0; pointer-events: none; }
+.mq-bulbs {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  filter: drop-shadow(0 0 4px currentColor);
+}
+.mq-bulb { fill: currentColor; animation: mq-bulb var(--mq-bulb-ms) step-end infinite; }
+.mq-bulb--b { animation-delay: calc(var(--mq-bulb-ms) / -2); }
+
+@keyframes mq-scroll-x {
+  from { transform: translate3d(var(--mq-from), 0, 0); }
+  to { transform: translate3d(var(--mq-to), 0, 0); }
+}
+@keyframes mq-scroll-y {
+  from { transform: translate3d(0, var(--mq-from), 0); }
+  to { transform: translate3d(0, var(--mq-to), 0); }
+}
+@keyframes mq-blink { 0% { opacity: 1; } 50% { opacity: 0; } }
+@keyframes mq-bulb { 0% { opacity: 1; } 50% { opacity: 0.18; } }
+@keyframes mq-hue {
+  0%, 100% { color: #ff3b3b; }
+  17% { color: #ffb000; }
+  33% { color: #fff200; }
+  50% { color: #3bff6a; }
+  67% { color: #22e4ff; }
+  83% { color: #9b6bff; }
+}
