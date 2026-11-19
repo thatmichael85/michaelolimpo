@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { DEFAULT_SETTINGS, FONTS, MAX_TEXT, sanitize } from './settings';
-import { applyPreset, resetStyle } from './presets';
+import { applyPreset, randomStyle, resetStyle } from './presets';
 import { loadSettings, saveSettings } from './storage';
 
 function memoryStore() {
@@ -91,5 +91,47 @@ describe('presets', () => {
   it('resets styling to defaults but keeps the message', () => {
     const s = resetStyle({ ...DEFAULT_SETTINGS, text: 'HI', color: '#ff0000', render: 'pixel' });
     expect(s).toEqual({ ...DEFAULT_SETTINGS, text: 'HI' });
+  });
+});
+
+/** Deterministic pseudo-random sequence for tests. */
+function seeded(seed: number) {
+  const next = () => {
+    seed = (seed * 16807) % 2147483647;
+    return (seed - 1) / 2147483646;
+  };
+  // Small seeds give tiny first values; skip a few so every pick varies.
+  for (let i = 0; i < 5; i++) next();
+  return next;
+}
+
+describe('randomStyle', () => {
+  it('never touches the message text', () => {
+    expect(randomStyle({ ...DEFAULT_SETTINGS, text: 'KEEP 💜\nME' }, seeded(1)).text).toBe('KEEP 💜\nME');
+  });
+
+  it('always produces valid settings', () => {
+    for (let i = 1; i <= 50; i++) {
+      const r = randomStyle(DEFAULT_SETTINGS, seeded(i));
+      expect(sanitize(r)).toEqual(r);
+    }
+  });
+
+  it('varies the look between rolls', () => {
+    const fonts = new Set(Array.from({ length: 30 }, (_, i) => randomStyle(DEFAULT_SETTINGS, seeded(i + 1)).font));
+    const renders = new Set(Array.from({ length: 30 }, (_, i) => randomStyle(DEFAULT_SETTINGS, seeded(i + 1)).render));
+    expect(fonts.size).toBeGreaterThan(4);
+    expect(renders.size).toBe(3);
+  });
+
+  it('keeps it readable: bright text on a dark background', () => {
+    const luminance = (hex: string) => {
+      const n = parseInt(hex.slice(1), 16);
+      return (0.2126 * ((n >> 16) & 255) + 0.7152 * ((n >> 8) & 255) + 0.0722 * (n & 255)) / 255;
+    };
+    for (let i = 1; i <= 50; i++) {
+      const r = randomStyle(DEFAULT_SETTINGS, seeded(i));
+      expect(luminance(r.color) - luminance(r.background.color)).toBeGreaterThan(0.35);
+    }
   });
 });

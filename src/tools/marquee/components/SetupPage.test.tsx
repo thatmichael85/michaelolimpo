@@ -63,10 +63,41 @@ describe('SetupPage', () => {
     expect(confirm).not.toHaveBeenCalled();
   });
 
+  it('Randomize restyles the sign without touching the text', () => {
+    render(<Harness />);
+    typeMessage('MY TEXT');
+    const before = localStorage.getItem('marquee:v1');
+    fireEvent.click(screen.getByRole('button', { name: 'Randomize' }));
+    expect(message().value).toBe('MY TEXT');
+    expect(localStorage.getItem('marquee:v1')).not.toBe(before);
+  });
+
+  it('opens presets in a popover from one button', () => {
+    render(<Harness />);
+    expect(screen.queryByRole('menuitem', { name: 'Neon' })).toBeNull();
+    const trigger = screen.getByRole('button', { name: 'Presets' });
+    expect(trigger).toHaveAttribute('aria-expanded', 'false');
+    fireEvent.click(trigger);
+    expect(trigger).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getAllByRole('menuitem').map((m) => m.textContent)).toEqual(['Neon', 'Stadium', 'Classic']);
+  });
+
+  it('closes the presets popover on Escape or a tap outside', () => {
+    render(<Harness />);
+    fireEvent.click(screen.getByRole('button', { name: 'Presets' }));
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(screen.queryByRole('menu')).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'Presets' }));
+    fireEvent.pointerDown(document.body);
+    expect(screen.queryByRole('menu')).toBeNull();
+  });
+
   it('applies a preset and keeps the text', () => {
     render(<Harness />);
     typeMessage('HELLO');
-    fireEvent.click(screen.getByRole('button', { name: 'Stadium' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Presets' }));
+    fireEvent.click(screen.getByRole('menuitem', { name: 'Stadium' }));
+    expect(screen.queryByRole('menu')).toBeNull();
     expect(screen.getByRole('radio', { name: 'LED' })).toBeChecked();
     expect(message().value).toBe('HELLO');
   });

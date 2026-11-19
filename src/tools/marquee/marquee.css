@@ -331,3 +331,35 @@ body {
 }
 .mq-close:active { opacity: 1; transform: scale(0.95); }
 .mq-close:focus-visible { outline: 2px solid var(--mq-accent); outline-offset: 2px; opacity: 1; }
+/* Presets popover: opens upward from the bottom action bar. */
+.mq-presets { position: relative; }
+.mq-popover {
+  position: absolute;
+  left: 0;
+  bottom: calc(100% + 8px);
+  z-index: 5;
+  min-width: 180px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 6px;
+  border-radius: var(--mq-radius);
+  background: var(--mq-panel-2);
+  border: 1px solid var(--mq-border);
+  box-shadow: 0 12px 32px #000a;
+}
+.mq-popover__item {
+  font: inherit;
+  font-size: 16px;
+  text-align: left;
+  min-height: 44px;
+  padding: 0 14px;
+  border: 0;
+  border-radius: 10px;
+  color: var(--mq-text);
+  background: transparent;
+  cursor: pointer;
+}
+.mq-popover__item:hover, .mq-popover__item:focus-visible { background: var(--mq-panel); outline: none; }
+.mq-popover__item:active { background: var(--mq-accent); color: var(--mq-accent-ink); }
+.mq-btn__icon { margin-right: 6px; }

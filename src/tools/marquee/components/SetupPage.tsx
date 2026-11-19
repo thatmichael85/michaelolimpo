@@ -1,14 +1,14 @@
 import { useEffect, useState } from 'react';
-import { PRESETS, type PresetId } from '../presets';
 import { MAX_TEXT } from '../settings';
 import type { SettingsApi } from '../useSettings';
 import { Display } from './Display';
 import { DisplayPanel } from './DisplayPanel';
+import { PresetsMenu } from './PresetsMenu';
 import { TextPanel } from './TextPanel';
 
 const RESET_ARM_MS = 3000;
 
-export function SetupPage({ settings, update, preset, reset, onPlay }: SettingsApi & { onPlay: () => void }) {
+export function SetupPage({ settings, update, preset, reset, randomize, onPlay }: SettingsApi & { onPlay: () => void }) {
   const [armed, setArmed] = useState(false);
   useEffect(() => {
     if (!armed) return;
@@ -49,13 +49,11 @@ export function SetupPage({ settings, update, preset, reset, onPlay }: SettingsA
       </div>
 
       <footer className="mq-actions">
-        <span className="mq-label">Presets</span>
-        {(Object.keys(PRESETS) as PresetId[]).map((id) => (
-          <button key={id} type="button" className="mq-btn" onClick={() => preset(id)}>
-            {PRESETS[id].label}
-          </button>
-        ))}
+        <PresetsMenu onPick={preset} />
         <span className="mq-spacer" />
+        <button type="button" className="mq-btn" aria-label="Randomize" onClick={randomize}>
+          <span className="mq-btn__icon" aria-hidden="true">🎲</span>Randomize
+        </button>
         <button type="button" className={`mq-btn${armed ? ' mq-btn--danger' : ''}`} onClick={onReset}>
           {armed ? 'Tap again to reset' : 'Reset'}
         </button>
