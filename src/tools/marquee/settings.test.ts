@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { DEFAULT_SETTINGS, MAX_TEXT, sanitize } from './settings';
+import { DEFAULT_SETTINGS, FONTS, MAX_TEXT, sanitize } from './settings';
 import { applyPreset, resetStyle } from './presets';
 import { loadSettings, saveSettings } from './storage';
 
@@ -47,6 +47,13 @@ describe('sanitize', () => {
   it('keeps valid nested values while repairing invalid siblings', () => {
     const s = sanitize({ background: { kind: 'gradient', color: '#ff0000', angle: 'x' } });
     expect(s.background).toEqual({ ...DEFAULT_SETTINGS.background, kind: 'gradient', color: '#ff0000' });
+  });
+});
+
+describe('fonts', () => {
+  it('offers everyday system fonts alongside the display fonts', () => {
+    expect(Object.keys(FONTS)).toEqual(expect.arrayContaining(['sans', 'rounded', 'serif', 'mono', 'bebas']));
+    expect(sanitize({ font: 'serif' }).font).toBe('serif');
   });
 });
 

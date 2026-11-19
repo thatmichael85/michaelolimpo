@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { BULB_STEP_MS, balanceLines, blinkPeriodMs, bulbPositions, fitScale, scrollDurationMs, scrollRate } from './layout';
+import { BULB_STEP_MS, balanceLines, blinkPeriodMs, bulbPositions, fitScale, scrollDurationMs, scrollRate, wrapToWidth } from './layout';
 
 describe('fitScale', () => {
   it('fits within 92% width and 85% height', () => {
@@ -46,6 +46,18 @@ describe('balanceLines', () => {
 
   it('respects line breaks the user typed', () => {
     expect(balanceLines('GO\nTEAM GO', widthOf, 12, { w: 460, h: 320 })).toEqual(['GO', 'TEAM GO']);
+  });
+});
+
+describe('wrapToWidth', () => {
+  const widthOf = (s: string) => [...s].length * 10;
+
+  it('wraps words onto new lines instead of shrinking the text', () => {
+    expect(wrapToWidth('GO GO 🎸🔥', widthOf, 60)).toEqual(['GO GO', '🎸🔥']);
+  });
+
+  it('keeps typed line breaks and leaves a too-long single word on its own line', () => {
+    expect(wrapToWidth('HI\nSUPERCALIFRAGILISTIC', widthOf, 60)).toEqual(['HI', 'SUPERCALIFRAGILISTIC']);
   });
 });
 

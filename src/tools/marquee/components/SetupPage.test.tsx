@@ -38,6 +38,12 @@ describe('SetupPage', () => {
     expect(screen.getByRole('checkbox', { name: 'Outline' })).toBeDisabled();
   });
 
+  it('labels the text size so it is not mistaken for a dot setting', () => {
+    render(<Harness />);
+    expect(screen.getByLabelText('Text size')).toBeInTheDocument();
+    expect(screen.queryByLabelText('Size')).toBeNull();
+  });
+
   it('needs a second tap to reset, keeps the text, and never uses confirm()', () => {
     const confirm = vi.spyOn(window, 'confirm');
     render(<Harness />);

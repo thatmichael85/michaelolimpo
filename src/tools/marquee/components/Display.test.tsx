@@ -25,7 +25,10 @@ beforeEach(() => {
     },
   );
 });
-afterEach(() => vi.unstubAllGlobals());
+afterEach(() => {
+  vi.restoreAllMocks();
+  vi.unstubAllGlobals();
+});
 
 const show = (patch: Partial<Settings> = {}) => render(<Display settings={{ ...DEFAULT_SETTINGS, ...patch }} />);
 const textEl = () => document.querySelector<HTMLElement>('.mq-text')!;
@@ -91,6 +94,28 @@ describe('Display (smooth)', () => {
   it('renders nothing for empty text without crashing', () => {
     show({ text: '' });
     expect(document.querySelector('.mq-letters')).toBeNull();
+  });
+
+  it('measures vertically scrolling text wrapped to the screen width', () => {
+    show({ text: 'WE LOVE YOU', scroll: 'up', size: 60, fit: false });
+    const measure = document.querySelector<HTMLElement>('.mq-measure')!;
+    // 60% of 820 = 492px font; the 1180px box is 1180 * 100 / 492 wide at the 100px reference size.
+    expect(parseFloat(measure.style.width)).toBeCloseTo((1180 * 100) / 492, 1);
+  });
+
+  it('shrinks a still sign that would wrap taller than the screen', () => {
+    vi.spyOn(HTMLElement.prototype, 'offsetHeight', 'get').mockImplementation(function (this: HTMLElement) {
+      return this.classList.contains('mq-measure') ? 330 : 0;
+    });
+    show({ text: 'WE LOVE YOU', scroll: 'off', size: 60, fit: false });
+    expect(parseFloat(textEl().style.fontSize)).toBeLessThan(492);
+  });
+
+  it('keeps the LED glow layer mounted so toggling Glow shows immediately', () => {
+    vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null);
+    show({ text: 'HI', render: 'led', glow: false });
+    expect(document.querySelector('canvas.mq-led-glow')).not.toBeNull();
+    expect(document.querySelector('canvas.mq-led-glow')).toHaveClass('mq-led-glow--off');
   });
 
   it('renders LED mode as a round-dot canvas instead of text', () => {

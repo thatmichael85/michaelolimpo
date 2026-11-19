@@ -21,33 +21,36 @@ export function TextPanel({ settings: s, update }: Pick<SettingsApi, 'settings' 
           style: { fontFamily: FONTS[id].family },
         }))}
       />
-      <Segmented<Settings['render']>
-        label="Render"
-        value={s.render}
-        onChange={(render) => update({ render })}
-        options={[
-          { value: 'smooth', label: 'Smooth' },
-          { value: 'led', label: 'LED' },
-          { value: 'pixel', label: 'Pixel' },
-        ]}
-      />
-      {dots && (
-        <>
-          <Slider label="Pixel size" min={MIN_ROWS} max={MAX_ROWS} value={pixelSize(s.dotRows)} onChange={(v) => update({ dotRows: pixelSize(v) })} />
-          <Segmented<Settings['unlit']>
-            label="Unlit dots"
-            value={s.unlit}
-            onChange={(unlit) => update({ unlit })}
-            options={[
-              { value: 'off', label: 'Hidden' },
-              { value: 'faint', label: 'Faint' },
-            ]}
-          />
-        </>
-      )}
-      <Slider label="Size" min={LIMITS.size[0]} max={LIMITS.size[1]} value={s.size} disabled={s.fit} onChange={(size) => update({ size })} />
+      <Slider label="Text size" min={LIMITS.size[0]} max={LIMITS.size[1]} value={s.size} disabled={s.fit} onChange={(size) => update({ size })} />
       <div className="mq-toggles">
         <Toggle label="Fit to screen" checked={s.fit} onChange={(fit) => update({ fit })} />
+      </div>
+      <div className="mq-subgroup">
+        <Segmented<Settings['render']>
+          label="Render"
+          value={s.render}
+          onChange={(render) => update({ render })}
+          options={[
+            { value: 'smooth', label: 'Smooth' },
+            { value: 'led', label: 'LED' },
+            { value: 'pixel', label: 'Pixel' },
+          ]}
+        />
+        {dots && (
+          <>
+            <Slider label="Pixel size" min={MIN_ROWS} max={MAX_ROWS} value={pixelSize(s.dotRows)} onChange={(v) => update({ dotRows: pixelSize(v) })} />
+            <Segmented<Settings['unlit']>
+              label="Unlit dots"
+              value={s.unlit}
+              onChange={(unlit) => update({ unlit })}
+              options={[
+                { value: 'off', label: 'Hidden' },
+                { value: 'faint', label: 'Faint' },
+              ]}
+            />
+            <p className="mq-help">Unlit dots are the board's switched-off lights, shown faintly like a real LED sign.</p>
+          </>
+        )}
       </div>
       <ColorField label="Colour" value={s.color} onChange={(color) => update({ color, rainbow: false })} />
       <div className="mq-toggles">

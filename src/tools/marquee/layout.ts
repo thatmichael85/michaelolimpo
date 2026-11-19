@@ -49,6 +49,24 @@ export function balanceLines(text: string, widthOf: (s: string) => number, lineH
   return best;
 }
 
+/** Greedy word wrap at a fixed text size (typed line breaks kept; an over-long word gets its own line). */
+export function wrapToWidth(text: string, widthOf: (s: string) => number, maxW: number): string[] {
+  return text.split(/\r?\n/).flatMap((para) => {
+    const lines: string[] = [];
+    let cur = '';
+    for (const word of para.split(/\s+/).filter(Boolean)) {
+      const next = cur ? `${cur} ${word}` : word;
+      if (cur && widthOf(next) > maxW) {
+        lines.push(cur);
+        cur = word;
+      } else {
+        cur = next;
+      }
+    }
+    return [...lines, cur];
+  });
+}
+
 /** Scroll speed in display heights per second, so preview and full screen look the same. */
 export function scrollRate(speed: number): number {
   return 0.15 * speed;

@@ -108,7 +108,8 @@ export function LedCanvas({ settings: s, w, h }: { settings: Settings; w: number
 
   return (
     <>
-      {s.glow && <canvas ref={glowRef} className="mq-led-glow" width={cols} height={rows} style={style} aria-hidden="true" />}
+      {/* Always mounted so the draw loop holds its context; Glow just shows or hides it. */}
+      <canvas ref={glowRef} className={`mq-led-glow${s.glow ? '' : ' mq-led-glow--off'}`} width={cols} height={rows} style={style} aria-hidden="true" />
       <canvas ref={canvasRef} className={`mq-led mq-led--${shape}`} width={cols} height={rows} style={style} aria-hidden="true" />
     </>
   );

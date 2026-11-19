@@ -1,4 +1,6 @@
-export type FontId = 'bebas' | 'anton' | 'bungee' | 'monoton' | 'pacifico' | 'pressstart';
+export type FontId =
+  | 'sans' | 'rounded' | 'serif' | 'mono'
+  | 'bebas' | 'anton' | 'bungee' | 'monoton' | 'pacifico' | 'pressstart';
 export type RenderMode = 'smooth' | 'led' | 'pixel';
 export type ScrollDir = 'off' | 'left' | 'right' | 'up' | 'down';
 export type BorderStyle = 'none' | 'solid' | 'neon' | 'bulbs';
@@ -35,6 +37,12 @@ export interface Settings {
 export const MAX_TEXT = 500;
 
 export const FONTS: Record<FontId, { label: string; family: string }> = {
+  // Everyday fonts built into the iPad (no download, work offline).
+  sans: { label: 'Sans', family: "system-ui, -apple-system, 'Helvetica Neue', Arial" },
+  rounded: { label: 'Rounded', family: "ui-rounded, 'SF Pro Rounded', system-ui" },
+  serif: { label: 'Serif', family: "ui-serif, Georgia, 'Times New Roman', serif" },
+  mono: { label: 'Mono', family: "ui-monospace, Menlo, 'Courier New', monospace" },
+  // Display fonts, self-hosted.
   bebas: { label: 'Bebas', family: "'Bebas Neue'" },
   anton: { label: 'Anton', family: "'Anton'" },
   bungee: { label: 'Bungee', family: "'Bungee'" },
