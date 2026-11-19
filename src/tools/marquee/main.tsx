@@ -9,6 +9,9 @@ import '@fontsource/pacifico/latin-400.css';
 import '@fontsource/press-start-2p/latin-400.css';
 import './marquee.css';
 import { MarqueeApp } from './components/MarqueeApp';
+import { registerMarqueeSW } from './pwa';
+
+registerMarqueeSW();
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
