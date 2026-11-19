@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { applyPreset, resetStyle, type PresetId } from './presets';
+import { applyPreset, randomStyle, resetStyle, type PresetId } from './presets';
 import { sanitize, type Settings } from './settings';
 import { loadSettings, saveSettings } from './storage';
 
@@ -17,6 +17,7 @@ export interface SettingsApi {
   update: (patch: Partial<Settings>) => void;
   preset: (id: PresetId) => void;
   reset: () => void;
+  randomize: () => void;
 }
 
 /** The one sign, loaded from and auto-saved to this device. */
@@ -26,5 +27,6 @@ export function useSettings(): SettingsApi {
   const update = useCallback((patch: Partial<Settings>) => setSettings((s) => sanitize({ ...s, ...patch })), []);
   const preset = useCallback((id: PresetId) => setSettings((s) => applyPreset(s, id)), []);
   const reset = useCallback(() => setSettings(resetStyle), []);
-  return { settings, update, preset, reset };
+  const randomize = useCallback(() => setSettings((s) => randomStyle(s)), []);
+  return { settings, update, preset, reset, randomize };
 }
