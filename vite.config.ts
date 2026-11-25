@@ -6,19 +6,20 @@ import { VitePWA } from 'vite-plugin-pwa'
 export default defineConfig({
   plugins: [
     react(),
-    // Offline support for /marquee/ only: the manifest is a static file linked from marquee/index.html,
-    // and the worker is registered by the marquee page itself, so other pages are never controlled.
+    // Offline support for /tools/marquee/ only: the manifest is a static file linked from
+    // tools/marquee/index.html, and the worker is registered by the marquee page itself, so other pages
+    // are never controlled. (The old /marquee/ path is a static redirect + kill-switch worker in public/marquee/.)
     VitePWA({
       manifest: false,
       injectRegister: false,
       registerType: 'autoUpdate',
-      filename: 'marquee/sw.js',
+      filename: 'tools/marquee/sw.js',
       workbox: {
-        globPatterns: ['marquee/**/*.{html,png,webmanifest}', 'assets/**/*.{js,css,woff2}'],
-        // The worker lives in /marquee/, so make precache URLs site-absolute rather than worker-relative.
+        globPatterns: ['tools/marquee/**/*.{html,png,webmanifest}', 'assets/**/*.{js,css,woff2}'],
+        // The worker lives in /tools/marquee/, so make precache URLs site-absolute rather than worker-relative.
         modifyURLPrefix: { '': '/' },
-        navigateFallback: '/marquee/index.html',
-        navigateFallbackAllowlist: [/^\/marquee\//],
+        navigateFallback: '/tools/marquee/index.html',
+        navigateFallbackAllowlist: [/^\/tools\/marquee\//],
         skipWaiting: true,
         clientsClaim: true,
         cleanupOutdatedCaches: true,
@@ -32,7 +33,7 @@ export default defineConfig({
       input: {
         main: 'index.html',
         downloadphotos: 'tools/downloadphotos/index.html',
-        marquee: 'marquee/index.html',
+        marquee: 'tools/marquee/index.html',
       },
     },
   },
