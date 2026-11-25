@@ -37,6 +37,17 @@ export const REPLY_ERROR = 'Sorry, something went wrong. Please try again.';
 export const OVERFLOW_ERROR = 'This conversation got too long. Press Clear to start over.';
 
 const errorName = (e: unknown) => (e as { name?: string } | null)?.name;
+const abortError = () => new DOMException('Stopped', 'AbortError');
+
+/** Resolves with `promise`, or rejects with AbortError as soon as `signal` aborts (the promise keeps running). */
+function untilAborted<T>(promise: Promise<T>, signal: AbortSignal): Promise<T> {
+  promise.catch(() => {}); // a later rejection is handled by getSession's notice, not here
+  if (signal.aborted) return Promise.reject(abortError());
+  return new Promise<T>((resolve, reject) => {
+    signal.addEventListener('abort', () => reject(abortError()), { once: true });
+    promise.then(resolve, reject);
+  });
+}
 
 export function useNanoChat(availability: UsableAvailability, systemPrompt: string): NanoChat {
   const [phase, setPhase] = useState<ChatPhase>('idle');
@@ -122,20 +133,27 @@ export function useNanoChat(availability: UsableAvailability, systemPrompt: stri
 
       void (async () => {
         try {
-          const session = await getSession();
+          // Stop must work while Chrome is still downloading/creating the session, not only mid-stream.
+          const session = await untilAborted(getSession(), controller.signal);
+          if (controller.signal.aborted || !isCurrent()) throw abortError();
           for await (const chunk of session.promptStreaming(text, { signal: controller.signal })) {
             if (!isCurrent()) return;
             updateReply((m) => ({ ...m, text: m.text + chunk }));
           }
         } catch (e) {
-          if (!isCurrent() || errorName(e) === 'AbortError') return; // Stop keeps the partial answer
+          if (!isCurrent()) return;
+          if (errorName(e) === 'AbortError') {
+            // Stop keeps a partial answer; an empty bubble would look like it's still thinking.
+            setMessages((ms) => ms.filter((m) => m.id !== replyId || m.text.trim() !== ''));
+            return;
+          }
           const msg = errorName(e) === 'QuotaExceededError' ? OVERFLOW_ERROR : REPLY_ERROR;
           updateReply((m) => ({ ...m, error: true, text: msg }));
         } finally {
           if (isCurrent()) {
             replyingRef.current = false;
             abortRef.current = null;
-            setPhase(sessionRef.current ? 'ready' : 'idle');
+            setPhase(sessionRef.current ? 'ready' : creatingRef.current ? 'preparing' : 'idle');
           }
         }
       })();

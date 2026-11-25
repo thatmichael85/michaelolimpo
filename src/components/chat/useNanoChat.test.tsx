@@ -103,6 +103,19 @@ describe('useNanoChat', () => {
     expect(lastText(result.current.messages)).toBe('Part');
   });
 
+  it('stop() during the download frees Send at once and drops the empty reply', async () => {
+    const { fake, result } = setup({ holdCreate: true }, 'downloadable');
+    act(() => result.current.ask('Q'));
+    expect(result.current.phase).toBe('replying');
+    act(() => result.current.stop());
+    await waitFor(() => expect(result.current.phase).toBe('preparing'));
+    expect(result.current.messages).toEqual([expect.objectContaining({ role: 'user', text: 'Q' })]);
+
+    await act(async () => fake.resolveCreate());
+    await waitFor(() => expect(result.current.phase).toBe('ready'));
+    expect(fake.sessions[0].promptStreaming).not.toHaveBeenCalled();
+  });
+
   it('clear() mid-reply discards late chunks and destroys the session', async () => {
     const { fake, result } = setup({ holdStream: true, replies: [['Part', 'Rest']] });
     act(() => result.current.ask('Q'));
