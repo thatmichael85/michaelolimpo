@@ -80,10 +80,15 @@ and is likely smarter than a ~1B WebLLM model.
 
 **Chat panel states:**
 - `available`: ready to type; the session is created on first focus or first question.
-- `downloadable` / `downloading`: the panel shows a short explainer and an **"Enable chat"**
-  button (the user gesture). Clicking it calls `create()` with a `downloadprogress` monitor
-  and shows a progress bar. On success, it becomes ready.
-- Error (create or prompt fails): an inline message; the panel stays, and the visitor can retry.
+- `downloadable` / `downloading`: the panel looks the same as when ready, plus a one-line note
+  that Chrome's on-device AI downloads once. **There is no "Enable" button.** The download starts
+  on the visitor's **first interaction with the chat** (focusing the input by click or Tab, or
+  tapping a starter question). That event is the user gesture Chrome requires for
+  `create()`, which is called with a `downloadprogress` monitor. A progress bar shows the
+  download. A question sent meanwhile appears in the log and is answered once the download finishes.
+- Chrome forbids starting the download without a gesture, and we deliberately do **not** hook
+  clicks elsewhere on the page: visitors who never touch the chat must not download anything.
+- Error (create or prompt fails): an inline message; the panel stays, and the next interaction retries.
 
 **Conversation:**
 - One `LanguageModel` session per conversation, created with `initialPrompts: [{ role: 'system', content: rules + facts }]`.
