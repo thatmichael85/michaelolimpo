@@ -392,6 +392,114 @@ body {
   text-wrap: pretty;
 }
 
+/* ==========================================================================
+   TOOLS SHOWCASE
+   ========================================================================== */
+.tools-showcase {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  min-width: 0;
+}
+
+.tools-heading {
+  font-family: var(--font-hand);
+  font-size: var(--text-xl);
+  font-weight: 700;
+  color: var(--text-primary);
+  line-height: 1.2;
+}
+
+.tools-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.tool-card {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  min-height: 48px;
+  background: var(--bg-card);
+  border: 1.5px solid var(--border-color);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-pop-sm);
+  color: var(--text-primary);
+  text-decoration: none;
+  touch-action: manipulation;
+  min-width: 0;
+  transition: transform var(--duration-fast) var(--ease-emphasized),
+              box-shadow var(--duration-fast) var(--ease-emphasized),
+              background-color var(--duration-fast) var(--ease-standard);
+}
+
+.tool-card:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: var(--shadow-pop-hover);
+  background-color: var(--bg-bio-box);
+}
+
+.tool-card:active {
+  transform: translate(1px, 1px);
+  box-shadow: 0px 0px 0px var(--shadow-color);
+}
+
+.tool-card:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 3px;
+}
+
+.tool-emoji {
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  font-size: 22px;
+  background: var(--badge-bg);
+  border: 1.5px solid var(--badge-border);
+  border-radius: var(--radius-sm);
+}
+
+.tool-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.tool-name {
+  font-size: var(--text-sm);
+  font-weight: 800;
+  color: var(--text-primary);
+  overflow-wrap: break-word;
+}
+
+.tool-desc {
+  font-size: clamp(0.8125rem, 3vw, 0.875rem);
+  font-weight: 500;
+  color: var(--text-secondary);
+  line-height: 1.45;
+  overflow-wrap: break-word;
+  text-wrap: pretty;
+}
+
+.tool-arrow {
+  flex-shrink: 0;
+  font-weight: 800;
+  color: var(--text-secondary);
+  transition: transform var(--duration-fast) var(--ease-emphasized);
+}
+
+.tool-card:hover .tool-arrow {
+  transform: translateX(3px);
+  color: var(--text-primary);
+}
+
 .linkedin-cta-wrap {
   display: flex;
   justify-content: flex-start;

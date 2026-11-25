@@ -24,6 +24,6 @@ export function registerMarqueeSW(): void {
     }),
   );
   window.addEventListener('load', () => {
-    sw.register('/marquee/sw.js', { scope: '/marquee/' }).catch(() => {});
+    sw.register('/tools/marquee/sw.js', { scope: '/tools/marquee/' }).catch(() => {});
   });
 }
