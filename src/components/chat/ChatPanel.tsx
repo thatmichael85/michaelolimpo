@@ -41,7 +41,7 @@ export default function ChatPanel({ availability }: { availability: UsableAvaila
         </Heading>
         {chat.needsDownload && (
           <Text variant="secondary" className="chat-note">
-            Runs privately in Chrome. Its built-in AI downloads once the first time you ask.
+            Chrome&apos;s built-in AI downloads once, the first time you ask.
           </Text>
         )}
         {chat.downloadProgress !== null && (
@@ -65,7 +65,7 @@ export default function ChatPanel({ availability }: { availability: UsableAvaila
           )}
           {chat.messages.map((m) => (
             <div key={m.id} className={`chat-msg chat-msg--${m.role}${m.error ? ' chat-msg--error' : ''}`}>
-              {m.text || '…'}
+              {m.text.trimEnd() || '…'}
             </div>
           ))}
         </div>
@@ -93,7 +93,7 @@ export default function ChatPanel({ availability }: { availability: UsableAvaila
 
         <div className="chat-footer">
           <Text variant="secondary" className="chat-disclaimer">
-            AI-generated and may be wrong.
+            Runs in your browser with Chrome&apos;s built-in AI. Your questions aren&apos;t sent to this site. Answers may be wrong.
           </Text>
           <Button variant="ghost" size="sm" onClick={chat.clear}>
             Clear

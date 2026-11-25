@@ -10,7 +10,8 @@ import {
 } from '../../test/fakeLanguageModel';
 
 const STARTERS = ['What does Michael do?', 'What has he built?', 'How can I reach him?'];
-const DOWNLOAD_NOTE = 'Runs privately in Chrome. Its built-in AI downloads once the first time you ask.';
+const DOWNLOAD_NOTE = "Chrome's built-in AI downloads once, the first time you ask.";
+const DISCLAIMER = "Runs in your browser with Chrome's built-in AI. Your questions aren't sent to this site. Answers may be wrong.";
 
 function setup(opts: FakeLanguageModelOptions = {}, availability: UsableAvailability = 'available') {
   const fake = installFakeLanguageModel(opts);
@@ -25,7 +26,7 @@ describe('ChatPanel', () => {
     setup();
     expect(screen.getByRole('heading', { name: /Ask about Michael/ })).toBeInTheDocument();
     for (const q of STARTERS) expect(screen.getByRole('button', { name: q })).toBeInTheDocument();
-    expect(screen.getByText('AI-generated and may be wrong.')).toBeInTheDocument();
+    expect(screen.getByText(DISCLAIMER)).toBeInTheDocument();
   });
 
   it('focusing the input starts preparing, but rendering alone does not', async () => {
@@ -70,6 +71,15 @@ describe('ChatPanel', () => {
     expect(within(screen.getByRole('log')).getByText('Hello?')).toBeInTheDocument();
     expect(input).toHaveValue('');
     await waitFor(() => expect(within(screen.getByRole('log')).getByText('Hi!')).toBeInTheDocument());
+  });
+
+  it('does not show trailing blank lines from the model', async () => {
+    setup({ replies: [['Reach him on LinkedIn.', '\n\n  \n']] });
+    fireEvent.click(screen.getByRole('button', { name: 'How can I reach him?' }));
+    const log = screen.getByRole('log');
+    await waitFor(() => expect(within(log).getByText('Reach him on LinkedIn.')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Send' })).toBeEnabled());
+    expect(log.querySelector('.chat-msg--assistant')?.textContent).toBe('Reach him on LinkedIn.');
   });
 
   it('caps input at 500 characters', () => {
