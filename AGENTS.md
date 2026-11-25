@@ -38,10 +38,18 @@ src/
 │   ├── layout/                  # Shell components
 │   │   ├── ThemeToggle.tsx      # Floating 3-state toggle (🖥️ System / ☀️ Light / 🌙 Dark)
 │   │   └── Footer.tsx           # Dynamic domain (window.location.hostname) + Year
-│   └── landing/                 # Landing page sections
-│       ├── ProfileHeader.tsx    # Dual banner cross-fade + Avatar + Headline
-│       ├── BioBlock.tsx         # Bio statement + quote box
-│       └── ConnectCTA.tsx       # High-contrast LinkedIn button
+│   ├── landing/                 # Landing page sections
+│   │   ├── ProfileHeader.tsx    # Dual banner cross-fade + Avatar + Headline
+│   │   ├── BioBlock.tsx         # Bio statement + quote box
+│   │   └── ConnectCTA.tsx       # High-contrast LinkedIn button
+│   └── chat/                    # Homepage "Ask about Michael" chat (Chrome's on-device Gemini Nano)
+│       ├── languageModel.ts     # Prompt API types, NANO_OPTIONS, checkNanoAvailability()
+│       ├── useNanoAvailability.ts # Gate: shown only if Nano is available/downloadable
+│       ├── useNanoChat.ts       # Session lifecycle: download on first interaction, stream, stop, clear
+│       ├── ChatPanel.tsx        # Lazy-loaded UI (separate chunk; non-Nano visitors never fetch it)
+│       ├── systemPrompt.ts      # rules.md + facts.md → system prompt
+│       ├── rules.md             # Bot behaviour rules
+│       └── facts.md             # PUBLIC fact sheet about Michael (ships to every browser)
 │
 ├── pages/                       # Page-level views (scalable for future routes)
 │   └── LandingPage.tsx          # Current landing page view
@@ -50,7 +58,7 @@ src/
 │   ├── hostname.ts              # Hostname formatter with mikeosoft.ai fallback
 │   └── theme.ts                 # 3-state theme resolver & matchMedia listener
 │
-├── test/                        # Vitest setup & testing helpers
+├── test/                        # Vitest setup & testing helpers (fakeLanguageModel.ts = Prompt API test double)
 ├── App.tsx                      # App root with Astryx Theme provider & reactive state
 ├── main.tsx                     # Vite bootstrap entry
 └── index.css                    # Global Astryx CSS imports + canvas background
