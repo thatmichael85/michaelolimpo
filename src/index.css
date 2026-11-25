@@ -687,6 +687,39 @@ body {
   gap: 8px;
 }
 
+/* Two columns: profile card (unchanged width) + chat. The chat matches the card's height
+   and scrolls inside itself, so a long conversation never grows the page. */
+.landing-wrapper--with-chat {
+  max-width: 1080px;
+  display: grid;
+  grid-template-columns: minmax(0, 600px) minmax(320px, 1fr);
+  gap: 24px;
+  align-items: stretch;
+}
+
+.chat-column {
+  position: relative;
+  min-width: 0;
+  animation: chat-fade-in 250ms var(--ease-emphasized);
+}
+
+.chat-column > .chat-panel {
+  position: absolute;
+  inset: 0;
+}
+
+@media (max-width: 999px) {
+  .landing-wrapper--with-chat {
+    max-width: 600px;
+    grid-template-columns: 1fr;
+  }
+
+  .chat-column > .chat-panel {
+    position: static;
+    height: 480px;
+  }
+}
+
 @keyframes chat-fade-in {
   from {
     opacity: 0;
@@ -769,7 +802,8 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .doodle-sparkle {
+  .doodle-sparkle,
+  .chat-column {
     animation: none;
   }
   *,
