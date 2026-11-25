@@ -10,6 +10,8 @@ describe("LandingPage", () => {
     expect(container.querySelector(".identity-info")).toBeInTheDocument();
     expect(container.querySelector(".bio-block")).toBeInTheDocument();
     expect(container.querySelector(".linkedin-cta-wrap")).toBeInTheDocument();
+    expect(container.querySelector(".tools-showcase")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Marquee/ })).toHaveAttribute("href", "/tools/marquee/");
 
     expect(screen.getByRole("heading", { level: 1, name: "Michael Angelo S Olimpo" })).toBeInTheDocument();
     expect(screen.getByText("AI Guide & Systems Builder")).toBeInTheDocument();
