@@ -655,6 +655,51 @@ body {
   border-style: dashed;
 }
 
+/* Markdown inside assistant replies (rendered by Markdown.tsx; no raw HTML). */
+.chat-msg--assistant {
+  white-space: normal;
+}
+
+.chat-msg p,
+.chat-msg ul,
+.chat-msg ol {
+  margin: 0;
+}
+
+.chat-msg > * + * {
+  margin-top: 8px;
+}
+
+.chat-msg ul,
+.chat-msg ol {
+  padding-left: 20px;
+}
+
+.chat-msg ul {
+  list-style: disc;
+}
+
+.chat-msg ol {
+  list-style: decimal;
+}
+
+.chat-msg a {
+  color: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  overflow-wrap: anywhere;
+}
+
+.chat-msg code {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+  padding: 0 4px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 4px;
+  background: var(--bg-card);
+}
+
 .chat-form {
   display: flex;
   gap: 8px;

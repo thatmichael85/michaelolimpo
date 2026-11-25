@@ -4,6 +4,7 @@ import { Button } from '../../design-system/primitives/Button';
 import { Heading } from '../../design-system/primitives/Heading';
 import { Text } from '../../design-system/primitives/Text';
 import { useNanoChat } from './useNanoChat';
+import { Markdown } from './Markdown';
 import { SYSTEM_PROMPT } from './systemPrompt';
 import type { UsableAvailability } from './languageModel';
 
@@ -65,7 +66,7 @@ export default function ChatPanel({ availability }: { availability: UsableAvaila
           )}
           {chat.messages.map((m) => (
             <div key={m.id} className={`chat-msg chat-msg--${m.role}${m.error ? ' chat-msg--error' : ''}`}>
-              {m.text.trimEnd() || '…'}
+              {!m.text.trim() ? '…' : m.role === 'assistant' ? <Markdown text={m.text} /> : m.text}
             </div>
           ))}
         </div>

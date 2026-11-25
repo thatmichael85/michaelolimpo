@@ -82,6 +82,17 @@ describe('ChatPanel', () => {
     expect(log.querySelector('.chat-msg--assistant')?.textContent).toBe('Reach him on LinkedIn.');
   });
 
+  it('renders Markdown links in answers but not in the visitor\'s own text', async () => {
+    setup({ replies: [['Try [LinkedIn](https://www.linkedin.com/in/x/).']] });
+    const { input } = { input: screen.getByRole('textbox', { name: 'Your question' }) };
+    fireEvent.change(input, { target: { value: '[me](https://example.com)' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Send' }));
+    const log = screen.getByRole('log');
+    await waitFor(() => expect(within(log).getByRole('link', { name: 'LinkedIn' })).toBeInTheDocument());
+    expect(within(log).getAllByRole('link')).toHaveLength(1);
+    expect(within(log).getByText('[me](https://example.com)')).toBeInTheDocument();
+  });
+
   it('caps input at 500 characters', () => {
     const { input } = setup();
     expect(input).toHaveAttribute('maxLength', '500');

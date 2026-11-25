@@ -39,7 +39,6 @@ and is likely smarter than a ~1B WebLLM model.
 - Any fallback for non-Nano visitors: no WebLLM, no FAQ, no "open in Chrome" placeholder.
 - Saving chat history between visits; analytics or logging of questions.
 - Languages other than English.
-- Rendering Markdown in replies (plain text with line breaks).
 
 **Anti-goals** (would make it a failure even if it works)
 - Slowing down or changing the homepage for visitors who can't use the chat.
@@ -113,6 +112,10 @@ and is likely smarter than a ~1B WebLLM model.
 - With no chat, the layout is exactly as today.
 - The panel fades in (with no motion under `prefers-reduced-motion`), so the card's shift left
   is softened rather than a jolt.
+
+**Replies (added after first real-Nano test):** Nano writes Markdown, so assistant replies render a safe subset
+(paragraphs, line breaks, lists, http(s)/mailto links in a new tab, bold, italic, inline code) via a small in-house
+renderer that builds React elements, never raw HTML. Visitor messages stay plain text.
 
 **Look:**
 - The panel uses the `Card`, `Button` and `Text` primitives and tokens only. User bubbles use the

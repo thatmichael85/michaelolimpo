@@ -15,6 +15,10 @@ describe('SYSTEM_PROMPT', () => {
     expect(SYSTEM_PROMPT.indexOf('RULES:')).toBeLessThan(SYSTEM_PROMPT.indexOf('FACTS:'));
   });
 
+  it('only declines unrelated questions and never tacks a refusal onto an answer', () => {
+    expect(SYSTEM_PROMPT).toContain('Never add that sentence to an answer');
+  });
+
   it('knows the visitor is already on the site, so never sends them to it', () => {
     expect(SYSTEM_PROMPT).toContain('The visitor is already on mikeosoft.ai');
     expect(SYSTEM_PROMPT).not.toMatch(/^- Website:/m);
