@@ -5,14 +5,15 @@ import { Heading } from '../../design-system/primitives/Heading';
 import { Text } from '../../design-system/primitives/Text';
 import { useNanoChat } from './useNanoChat';
 import { Markdown } from './Markdown';
-import { SYSTEM_PROMPT } from './systemPrompt';
+import { revealsInstructions, SYSTEM_PROMPT } from './systemPrompt';
 import type { UsableAvailability } from './languageModel';
 
+const CHAT_OPTIONS = { blockReply: revealsInstructions };
 const STARTERS = ['What does Michael do?', 'What has he built?', 'How can I reach him?'];
 
 /** Homepage chat about Michael, answered by Chrome's on-device Gemini Nano. Lazy-loaded. */
 export default function ChatPanel({ availability }: { availability: UsableAvailability }) {
-  const chat = useNanoChat(availability, SYSTEM_PROMPT);
+  const chat = useNanoChat(availability, SYSTEM_PROMPT, CHAT_OPTIONS);
   const [draft, setDraft] = useState('');
   const logRef = useRef<HTMLDivElement>(null);
   const replying = chat.phase === 'replying';

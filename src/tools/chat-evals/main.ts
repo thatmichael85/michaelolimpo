@@ -1,5 +1,6 @@
 import { getLanguageModel, NANO_OPTIONS } from '../../components/chat/languageModel';
-import { SYSTEM_PROMPT } from '../../components/chat/systemPrompt';
+import { revealsInstructions, SYSTEM_PROMPT } from '../../components/chat/systemPrompt';
+import { BLOCKED_REPLY } from '../../components/chat/useNanoChat';
 import { CASES, type EvalCase } from './cases';
 import { grade, type GradeResult } from './grade';
 
@@ -33,7 +34,10 @@ async function ask(c: EvalCase): Promise<string> {
   const timer = setTimeout(() => timeout.abort(), 60_000);
   try {
     let reply = '';
-    for await (const chunk of session.promptStreaming(c.prompt, { signal: timeout.signal })) reply += chunk;
+    for await (const chunk of session.promptStreaming(c.prompt, { signal: timeout.signal })) {
+      reply += chunk;
+      if (revealsInstructions(reply)) return `${BLOCKED_REPLY} [guard: blocked instruction leak]`; // same guard as the panel
+    }
     return reply;
   } finally {
     clearTimeout(timer);

@@ -35,6 +35,13 @@ export interface NanoChat {
 export const SETUP_NOTICE = "Couldn't start Chrome's on-device AI. Try again.";
 export const REPLY_ERROR = 'Sorry, something went wrong. Please try again.';
 export const OVERFLOW_ERROR = 'This conversation got too long. Press Clear to start over.';
+/** Shown instead of a reply the guard blocks (e.g. one reciting the bot's instructions). */
+export const BLOCKED_REPLY = 'I can only answer questions about Michael.';
+
+export interface NanoChatOptions {
+  /** Return true to stop a reply mid-stream and show BLOCKED_REPLY instead. */
+  blockReply?: (replySoFar: string) => boolean;
+}
 
 const errorName = (e: unknown) => (e as { name?: string } | null)?.name;
 const abortError = () => new DOMException('Stopped', 'AbortError');
@@ -49,7 +56,12 @@ function untilAborted<T>(promise: Promise<T>, signal: AbortSignal): Promise<T> {
   });
 }
 
-export function useNanoChat(availability: UsableAvailability, systemPrompt: string): NanoChat {
+export function useNanoChat(
+  availability: UsableAvailability,
+  systemPrompt: string,
+  options: NanoChatOptions = {},
+): NanoChat {
+  const { blockReply } = options;
   const [phase, setPhase] = useState<ChatPhase>('idle');
   const [hadSession, setHadSession] = useState(false);
   const [downloadProgress, setDownloadProgress] = useState<number | null>(null);
@@ -136,8 +148,15 @@ export function useNanoChat(availability: UsableAvailability, systemPrompt: stri
           // Stop must work while Chrome is still downloading/creating the session, not only mid-stream.
           const session = await untilAborted(getSession(), controller.signal);
           if (controller.signal.aborted || !isCurrent()) throw abortError();
+          let replySoFar = '';
           for await (const chunk of session.promptStreaming(text, { signal: controller.signal })) {
             if (!isCurrent()) return;
+            replySoFar += chunk;
+            if (blockReply?.(replySoFar)) {
+              controller.abort();
+              updateReply((m) => ({ ...m, text: BLOCKED_REPLY }));
+              return;
+            }
             updateReply((m) => ({ ...m, text: m.text + chunk }));
           }
         } catch (e) {
@@ -158,7 +177,7 @@ export function useNanoChat(availability: UsableAvailability, systemPrompt: stri
         }
       })();
     },
-    [getSession],
+    [getSession, blockReply],
   );
 
   const stop = useCallback(() => abortRef.current?.abort(), []);
