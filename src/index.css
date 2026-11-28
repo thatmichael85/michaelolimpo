@@ -576,6 +576,205 @@ body {
 }
 
 /* ==========================================================================
+   HOMEPAGE CHAT (Gemini Nano, shown only when Chrome supports it)
+   ========================================================================== */
+.chat-panel {
+  height: 100%;
+  min-height: 0;
+}
+
+.chat-section {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 20px;
+}
+
+.chat-title {
+  margin: 0;
+}
+
+.chat-note,
+.chat-disclaimer {
+  margin: 0;
+  font-size: var(--text-sm);
+}
+
+.chat-disclaimer {
+  font-size: var(--text-xs);
+}
+
+.chat-progress {
+  width: 100%;
+  height: 10px;
+  accent-color: var(--btn-primary-bg-active);
+}
+
+.chat-log {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  display: grid;
+  gap: 10px;
+  align-content: start;
+}
+
+.chat-starters {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.chat-msg {
+  max-width: 90%;
+  padding: 10px 12px;
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius-md);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  line-height: 1.5;
+  font-size: var(--text-sm);
+}
+
+.chat-msg--user {
+  justify-self: end;
+  background: var(--btn-primary-bg);
+  color: var(--btn-primary-text);
+}
+
+.chat-msg--assistant {
+  justify-self: start;
+  background: var(--bg-bio-box);
+  color: var(--text-primary);
+}
+
+.chat-msg--error {
+  border-style: dashed;
+}
+
+/* Markdown inside assistant replies (rendered by Markdown.tsx; no raw HTML). */
+.chat-msg--assistant {
+  white-space: normal;
+}
+
+.chat-msg p,
+.chat-msg ul,
+.chat-msg ol {
+  margin: 0;
+}
+
+.chat-msg > * + * {
+  margin-top: 8px;
+}
+
+.chat-msg ul,
+.chat-msg ol {
+  padding-left: 20px;
+}
+
+.chat-msg ul {
+  list-style: disc;
+}
+
+.chat-msg ol {
+  list-style: decimal;
+}
+
+.chat-msg a {
+  color: inherit;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  overflow-wrap: anywhere;
+}
+
+.chat-msg code {
+  font-family: var(--font-mono);
+  font-size: 0.9em;
+  padding: 0 4px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 4px;
+  background: var(--bg-card);
+}
+
+.chat-form {
+  display: flex;
+  gap: 8px;
+}
+
+.chat-input {
+  flex: 1;
+  min-width: 0;
+  font: inherit;
+  color: var(--text-primary);
+  background: var(--bg-card);
+  border: 2px solid var(--border-color);
+  border-radius: var(--radius-sm);
+  padding: 10px 12px;
+}
+
+.chat-input::placeholder {
+  color: var(--text-secondary);
+}
+
+.chat-input:focus-visible {
+  outline: 2px solid var(--border-color);
+  outline-offset: 2px;
+}
+
+.chat-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Two columns: profile card (unchanged width) + chat. The chat matches the card's height
+   and scrolls inside itself, so a long conversation never grows the page. */
+.landing-wrapper--with-chat {
+  max-width: 1080px;
+  display: grid;
+  grid-template-columns: minmax(0, 600px) minmax(320px, 1fr);
+  gap: 24px;
+  align-items: stretch;
+}
+
+.chat-column {
+  position: relative;
+  min-width: 0;
+  animation: chat-fade-in 250ms var(--ease-emphasized);
+}
+
+.chat-column > .chat-panel {
+  position: absolute;
+  inset: 0;
+}
+
+@media (max-width: 999px) {
+  .landing-wrapper--with-chat {
+    max-width: 600px;
+    grid-template-columns: 1fr;
+  }
+
+  .chat-column > .chat-panel {
+    position: static;
+    height: 480px;
+  }
+}
+
+@keyframes chat-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* ==========================================================================
    RESPONSIVE BREAKPOINTS (MOBILE & TABLET ERGONOMICS)
    ========================================================================== */
 @media (max-width: 600px) {
@@ -648,7 +847,8 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .doodle-sparkle {
+  .doodle-sparkle,
+  .chat-column {
     animation: none;
   }
   *,

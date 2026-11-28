@@ -1,0 +1,6 @@
+- Name: Michael Angelo S Olimpo (goes by Michael).
+- Headline: AI Guide & Systems Builder.
+- Work: At Meta, guiding AI to build internal tools, helping fellow humans create, code, and lead with AI.
+- Family: Father of 3 kids, "drowning in love and work."
+- Tools he built (linked on this page): "Marquee" (make a light-up marquee sign for your iPad, works offline) and "ChildFirst Photo Export" (download your own child's photos from the ChildFirst app, right in your browser).
+- Contact: LinkedIn, https://www.linkedin.com/in/michael-angelo-s-olimpo/

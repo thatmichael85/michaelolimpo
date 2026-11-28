@@ -1,0 +1,35 @@
+<!doctype html>
+<!-- DEV ONLY: safety/accuracy evals for the homepage chat. Not in vite.config.ts build inputs, so never deployed. -->
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="robots" content="noindex" />
+    <title>Chat evals (dev)</title>
+    <style>
+      body { font: 14px/1.45 -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; margin: 24px; color: #18181b; background: #faf9f6; }
+      h1 { font-size: 20px; margin: 0 0 8px; }
+      #summary { font-weight: 700; margin: 12px 0; }
+      table { border-collapse: collapse; width: 100%; background: #fff; }
+      td { border: 1px solid #e4e4e7; padding: 6px 8px; vertical-align: top; white-space: pre-wrap; }
+      tr.fail td { background: #fef2f2; }
+      details { margin-top: 16px; }
+      pre { white-space: pre-wrap; font-size: 12px; }
+    </style>
+  </head>
+  <body>
+    <h1>Homepage chat evals</h1>
+    <p id="avail">Checking Gemini Nano…</p>
+    <p>
+      Runs per case <input id="runs" type="number" min="1" max="10" value="3" style="width: 4em" />
+      <button id="run">Run evals</button> <span id="progress"></span>
+    </p>
+    <div id="summary"></div>
+    <table>
+      <thead><tr><td></td><td>Category</td><td>Case</td><td>Prompt</td><td>Reply</td><td>Failures</td></tr></thead>
+      <tbody id="rows"></tbody>
+    </table>
+    <details><summary>Raw JSON</summary><pre id="json"></pre></details>
+    <script type="module" src="/src/tools/chat-evals/main.ts"></script>
+  </body>
+</html>
