@@ -46,13 +46,29 @@ describe('ChatPanel', () => {
     expect(screen.queryByText(DOWNLOAD_NOTE)).not.toBeInTheDocument();
   });
 
-  it('shows download progress while Chrome downloads', async () => {
+  it('shows labelled download progress while Chrome downloads', async () => {
     const { fake, input } = setup({ holdCreate: true, downloadProgress: [0.4] }, 'downloadable');
     fireEvent.focus(input);
     const bar = await screen.findByRole('progressbar', { name: "Downloading Chrome's AI" });
     expect(bar).toHaveAttribute('value', '0.4');
+    expect(screen.getByText("Downloading Chrome's AI… 40%")).toBeInTheDocument();
     await act(async () => fake.resolveCreate());
     await waitFor(() => expect(screen.queryByRole('progressbar')).not.toBeInTheDocument());
+    expect(screen.queryByText(/Downloading Chrome's AI…/)).not.toBeInTheDocument();
+  });
+
+  it('says it is starting, not a full bar, once the download is done but Nano is still loading', async () => {
+    const { input } = setup({ holdCreate: true, downloadProgress: [0.4, 1] }, 'downloadable');
+    fireEvent.focus(input);
+    await screen.findByText("Starting Chrome's AI…");
+    expect(screen.queryByRole('progressbar')).not.toBeInTheDocument();
+  });
+
+  it('shows no download bar when Nano is already on the device (Chrome still reports 0% then 100%)', async () => {
+    const { input } = setup({ holdCreate: true, downloadProgress: [0, 1] }, 'available');
+    fireEvent.focus(input);
+    await waitFor(() => expect(screen.queryByRole('progressbar')).not.toBeInTheDocument());
+    expect(screen.queryByText(/Chrome's AI…/)).not.toBeInTheDocument();
   });
 
   it('clicking a starter question asks it and shows the streamed answer', async () => {

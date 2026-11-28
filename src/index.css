@@ -606,10 +606,40 @@ body {
   font-size: var(--text-xs);
 }
 
+.chat-download {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+/* Drawn by hand: Chrome ignores accent-color here and paints its own green. */
 .chat-progress {
+  appearance: none;
   width: 100%;
-  height: 10px;
-  accent-color: var(--btn-primary-bg-active);
+  height: 12px;
+  border: 2px solid var(--border-color);
+  border-radius: 999px;
+  background: var(--bg-card);
+  overflow: hidden;
+}
+
+.chat-progress::-webkit-progress-bar {
+  background: var(--bg-card);
+}
+
+.chat-progress::-webkit-progress-value {
+  background: var(--btn-primary-bg-active);
+  transition: width 150ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.chat-progress::-moz-progress-bar {
+  background: var(--btn-primary-bg-active);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chat-progress::-webkit-progress-value {
+    transition: none;
+  }
 }
 
 .chat-log {
