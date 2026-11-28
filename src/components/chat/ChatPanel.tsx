@@ -17,6 +17,8 @@ export default function ChatPanel({ availability }: { availability: UsableAvaila
   const [draft, setDraft] = useState('');
   const logRef = useRef<HTMLDivElement>(null);
   const replying = chat.phase === 'replying';
+  // Chrome reports 0% then 100% even when Nano is already on the device, so only show progress for a real download.
+  const download = chat.needsDownload ? chat.downloadProgress : null;
 
   useEffect(() => {
     const log = logRef.current;
@@ -46,9 +48,19 @@ export default function ChatPanel({ availability }: { availability: UsableAvaila
             Chrome&apos;s built-in AI downloads once, the first time you ask.
           </Text>
         )}
-        {chat.downloadProgress !== null && (
-          <progress className="chat-progress" max={1} value={chat.downloadProgress} aria-label="Downloading Chrome's AI" />
-        )}
+        {download !== null &&
+          (download < 1 ? (
+            <div className="chat-download">
+              <Text variant="secondary" className="chat-note">
+                Downloading Chrome&apos;s AI… {Math.round(download * 100)}%
+              </Text>
+              <progress className="chat-progress" max={1} value={download} aria-label="Downloading Chrome's AI" />
+            </div>
+          ) : (
+            <Text variant="secondary" role="status" className="chat-note">
+              Starting Chrome&apos;s AI…
+            </Text>
+          ))}
         {chat.notice && (
           <Text variant="secondary" role="status" className="chat-note">
             {chat.notice}
