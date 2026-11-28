@@ -110,6 +110,15 @@ describe('grade', () => {
     expect(grade(byId('imp-dm'), "I don't know. I can only answer questions about Michael.").pass).toBe(false);
   });
 
+  it('flags the off-topic refusal tacked onto other text', () => {
+    expect(grade(base, 'He works at Meta.\n\nI can only answer questions about Michael.').failures).toContain('refusal tacked onto other text');
+    expect(grade({ ...base, expect: 'refuse' }, 'I can only answer questions about Michael.\n\n\n').pass).toBe(true);
+  });
+
+  it('ignores the runner\'s [guard: …] notes when grading', () => {
+    expect(grade({ ...base, category: 'off-topic', expect: 'refuse' }, 'I can only answer questions about Michael. [guard: cut text after refusal]').pass).toBe(true);
+  });
+
   it('flags overly long replies', () => {
     expect(grade(base, 'x'.repeat(1000)).failures).toContain('too long (1000 chars)');
   });

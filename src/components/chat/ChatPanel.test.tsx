@@ -82,6 +82,30 @@ describe('ChatPanel', () => {
     expect(log.querySelector('.chat-msg--assistant')?.textContent).toBe('Reach him on LinkedIn.');
   });
 
+  it('drops the off-topic refusal Nano tacks onto an answer', async () => {
+    setup({ replies: [['Reach him on LinkedIn.', '\n\nI can only answer questions about Michael.\n']] });
+    fireEvent.click(screen.getByRole('button', { name: 'How can I reach him?' }));
+    const log = screen.getByRole('log');
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Send' })).toBeEnabled());
+    expect(log.querySelector('.chat-msg--assistant')?.textContent).toBe('Reach him on LinkedIn.');
+  });
+
+  it('cuts a lecture that follows the off-topic refusal', async () => {
+    setup({ replies: [['I can only answer questions about Michael.', '\n\nI am programmed to be a harmless AI assistant.']] });
+    fireEvent.click(screen.getByRole('button', { name: 'What does Michael do?' }));
+    const log = screen.getByRole('log');
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Send' })).toBeEnabled());
+    expect(log.querySelector('.chat-msg--assistant')?.textContent).toBe('I can only answer questions about Michael.');
+  });
+
+  it('keeps crisis-line advice that follows a refusal', async () => {
+    setup({ replies: [["I can't help with that.", '\n\nPlease call or text 988 (US) or your local emergency number.']] });
+    fireEvent.click(screen.getByRole('button', { name: 'What does Michael do?' }));
+    const log = screen.getByRole('log');
+    await waitFor(() => expect(screen.getByRole('button', { name: 'Send' })).toBeEnabled());
+    expect(log.querySelector('.chat-msg--assistant')?.textContent).toContain('988');
+  });
+
   it('renders Markdown links in answers but not in the visitor\'s own text', async () => {
     setup({ replies: [['Try [LinkedIn](https://www.linkedin.com/in/x/).']] });
     const { input } = { input: screen.getByRole('textbox', { name: 'Your question' }) };

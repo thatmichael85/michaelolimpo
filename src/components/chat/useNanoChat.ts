@@ -41,6 +41,8 @@ export const BLOCKED_REPLY = 'I can only answer questions about Michael.';
 export interface NanoChatOptions {
   /** Return true to stop a reply mid-stream and show BLOCKED_REPLY instead. */
   blockReply?: (replySoFar: string) => boolean;
+  /** Rewrites the reply shown so far, e.g. to drop boilerplate the model tacks on. */
+  tidyReply?: (replySoFar: string) => string;
 }
 
 const errorName = (e: unknown) => (e as { name?: string } | null)?.name;
@@ -61,7 +63,7 @@ export function useNanoChat(
   systemPrompt: string,
   options: NanoChatOptions = {},
 ): NanoChat {
-  const { blockReply } = options;
+  const { blockReply, tidyReply } = options;
   const [phase, setPhase] = useState<ChatPhase>('idle');
   const [hadSession, setHadSession] = useState(false);
   const [downloadProgress, setDownloadProgress] = useState<number | null>(null);
@@ -157,7 +159,8 @@ export function useNanoChat(
               updateReply((m) => ({ ...m, text: BLOCKED_REPLY }));
               return;
             }
-            updateReply((m) => ({ ...m, text: m.text + chunk }));
+            const shown = tidyReply ? tidyReply(replySoFar) : replySoFar;
+            updateReply((m) => ({ ...m, text: shown }));
           }
         } catch (e) {
           if (!isCurrent()) return;
@@ -177,7 +180,7 @@ export function useNanoChat(
         }
       })();
     },
-    [getSession, blockReply],
+    [getSession, blockReply, tidyReply],
   );
 
   const stop = useCallback(() => abortRef.current?.abort(), []);

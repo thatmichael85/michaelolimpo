@@ -5,10 +5,10 @@ import { Heading } from '../../design-system/primitives/Heading';
 import { Text } from '../../design-system/primitives/Text';
 import { useNanoChat } from './useNanoChat';
 import { Markdown } from './Markdown';
-import { revealsInstructions, SYSTEM_PROMPT } from './systemPrompt';
+import { revealsInstructions, SYSTEM_PROMPT, tidyReply } from './systemPrompt';
 import type { UsableAvailability } from './languageModel';
 
-const CHAT_OPTIONS = { blockReply: revealsInstructions };
+const CHAT_OPTIONS = { blockReply: revealsInstructions, tidyReply };
 const STARTERS = ['What does Michael do?', 'What has he built?', 'How can I reach him?'];
 
 /** Homepage chat about Michael, answered by Chrome's on-device Gemini Nano. Lazy-loaded. */

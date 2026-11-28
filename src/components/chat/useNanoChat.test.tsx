@@ -166,6 +166,16 @@ describe('useNanoChat', () => {
     expect(lastText(result.current.messages)).toBe(BLOCKED_REPLY);
   });
 
+  it('shows each streamed reply through tidyReply', async () => {
+    installFakeLanguageModel({ replies: [['He works at Meta.', ' BOILERPLATE']] });
+    const { result } = renderHook(() =>
+      useNanoChat('available', 'SYS', { tidyReply: (text) => text.replace(' BOILERPLATE', '') }),
+    );
+    act(() => result.current.ask('Q'));
+    await waitFor(() => expect(result.current.phase).toBe('ready'));
+    expect(lastText(result.current.messages)).toBe('He works at Meta.');
+  });
+
   it('destroys the session on unmount', async () => {
     const { fake, result, unmount } = setup();
     act(() => result.current.prepare());
